@@ -13,7 +13,7 @@ pip install -r /path/to/requirements.txt
 Then run the search engine using
 
 ```bash
-python /path/to/search_engine.py
+python /path/to/search.py
 ```
 
 Once the search engine is running, you can access it at `http://127.0.0.1:5000`.

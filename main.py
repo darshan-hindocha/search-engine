@@ -21,12 +21,12 @@ def break_down_data(data_path):
 
     return data
 
-import nltk
-nltk.download('stopwords')
-from nltk.corpus import stopwords
-def remove_stop_words(list_of_words):
-    text = [word for word in list_of_words if word not in stopwords.words('english')]
-    return text
+# import nltk
+# nltk.download('stopwords')
+# from nltk.corpus import stopwords
+# def remove_stop_words(list_of_words):
+#     text = [word for word in list_of_words if word not in stopwords.words('english')]
+#     return text
 
 import re
 def lower_case_alphanumeric(list_of_words):
@@ -49,7 +49,7 @@ def preprocess_data_in_libary(data):
             paragraph = lower_case_alphanumeric(paragraph)
 
             ## Remove stop words
-            paragraph = remove_stop_words(paragraph)
+            # paragraph = remove_stop_words(paragraph)
 
             data[document_index]['paragraphs'][paragraph_index] = paragraph
 
@@ -91,7 +91,7 @@ class SearchEngine:
     def preprocess_query(self, query):
         query = query.split(' ')
         ## Remove stop words
-        query = remove_stop_words(query)
+        # query = remove_stop_words(query)
         ## Lowercase alphanumeric characters
         query = lower_case_alphanumeric(query)
 
@@ -108,11 +108,19 @@ class SearchEngine:
 
     def search_paragraph(self, document_index, paragraph_index):
         p = self.library.get_paragraph_from_document(document_index, paragraph_index)
-        score = fuzz.token_set_ratio(p, self.query['original'])
+        score1 = fuzz.token_set_ratio(p, self.query['original'])
+        score2 = fuzz.token_sort_ratio(p, self.query['original'])
+        score = int((score1 + score2) / 2)
+
 
         self.scores[(document_index, paragraph_index)] = score
-        heapq.heappush(self.results, (-score, (document_index, paragraph_index)))
-        while len(self.results) > 10:
+        heapq.heappush(self.results, (score, (document_index, paragraph_index)))
+
+        biggest = heapq.heappop(self.results)
+        print('-----------------------------')
+        print('biggest: ', biggest)
+        heapq.heappush(self.results, biggest)
+        if len(self.results) > 10:
             heapq.heappop(self.results)
 
     def search_bag_of_words(self):
@@ -129,9 +137,10 @@ class SearchEngine:
         results = []
         for _ in range(10):
             score, (document_index, paragraph_index) = heapq.heappop(self.results)
-            score = -score
             item = self.library.get_original_paragraph_from_document(document_index, paragraph_index)
             results.append((item,score))
+
+        results = results[::-1]
         return results
 
 

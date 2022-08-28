@@ -7,12 +7,22 @@ app = Flask(__name__)
 api = Api(app)
 
 parser = reqparse.RequestParser()
+
+lib = Library('testdata')
+search = SearchEngine(lib)
+
 class Message(Resource):
     def get(self):
         return {'message': 'Hello, World!'}
     def post(self):
+        global search
         parser.add_argument('query')
+        parser.add_argument('refresh')
         args = parser.parse_args()
+        if args['refresh'] == 'true':
+            lib = Library('testdata')
+            search = SearchEngine(lib)
+            print("refreshed the search engine and library!")
         results = search.search(args['query'])
 
         res = {
@@ -31,6 +41,4 @@ class Message(Resource):
 api.add_resource(Message, '/api/search')
 
 if __name__ == '__main__':
-    lib = Library('testdata')
-    search = SearchEngine(lib)
     app.run(debug=True)

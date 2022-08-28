@@ -1,7 +1,33 @@
 # Search Engine
 
-## Requirements
+## Setup
 
+To run the search engine, set up a virtual environment and install the requirements.
+
+You can install the requirements using
+
+```bash
+pip install -r /path/to/requirements.txt
+```
+
+Then run the search engine using
+
+```bash
+python /path/to/search_engine.py
+```
+
+Once the search engine is running, you can access it at `http://127.0.0.1:5000`.
+
+At the time of writing, the available api endpoints are:
+- GET '/api/search' - returns a hello world json
+- POST '/api/search' - returns a json of the search results with input: { "query": "put your query here" }
+
+http://127.0.0.1:5000/api/search
+
+
+# Some Prior Brainstorming, Slightly out of date
+
+## Technical Requirements
 * Fast read access to the index
 * Fast search
 * Update speed not a priority

@@ -20,9 +20,6 @@ class Message(Resource):
         }
 
         for i, (r, s) in enumerate(results):
-            print('================================================================')
-            print('Query: ', query)
-            print('Score: ', s)
             res.update({
                 'result_{}'.format(i): {
                     'score': s,
@@ -36,6 +33,4 @@ api.add_resource(Message, '/api/search')
 if __name__ == '__main__':
     lib = Library('testdata')
     search = SearchEngine(lib)
-    query = 'covered amiable greater'
-
     app.run(debug=True)

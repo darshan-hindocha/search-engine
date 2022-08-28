@@ -9,26 +9,15 @@ def break_down_data(data_path):
     '''
 
     data = {}
-    import os
-    from collections import deque
+    import os, re
     for file in os.listdir(data_path):
         if file.endswith(".txt"):
             with open(os.path.join(data_path, file)) as f:
-
-                contents = deque(f.readlines())
-                paragraphs = []
-                while contents:
-                    paragraph = ""
-                    for _ in range(4):
-                        ## need a better way of seperating paragraphs
-                        try:
-                            line = contents.popleft()
-                        except IndexError:
-                            line = ""
-                        paragraph += " " + line
-                    paragraphs.append(paragraph)
-
-                data.update({file[:-4]: {'paragraphs': paragraphs}})
+                lines = f.read()
+                lines  = lines.replace('\n', ' ')
+                lines = lines.split('.')
+                lines = [line for line in lines if line not in [' ','']]
+                data.update({file[:-4]: {'paragraphs': lines}})
 
     return data
 
@@ -119,12 +108,8 @@ class SearchEngine:
 
     def search_paragraph(self, document_index, paragraph_index):
         p = self.library.get_paragraph_from_document(document_index, paragraph_index)
-        score = 0
-        for word in p:
-            for qword in self.query['lemQ']:
-                    score += fuzz.ratio(word, qword)
+        score = fuzz.token_set_ratio(p, self.query['original'])
 
-        score = score / len(p)
         self.scores[(document_index, paragraph_index)] = score
         heapq.heappush(self.results, (-score, (document_index, paragraph_index)))
         while len(self.results) > 10:

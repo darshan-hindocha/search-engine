@@ -21,7 +21,7 @@ class Message(Resource):
 
         for i, (r, s) in enumerate(results):
             res.update({
-                'result_{}'.format(i): {
+                'result_{}'.format(i+1): {
                     'score': s,
                     'result': r
                 },

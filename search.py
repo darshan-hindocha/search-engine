@@ -84,6 +84,7 @@ class Library:
         self.original = break_down_data(data_source)
         self.data = break_down_data(data_source)
         self.document_ids = list(self.data.keys())
+        self.set_document_ids = set(self.document_ids)
 
     # Get Indexes for looping through the documents and paragraphs
     def get_document_ids(self):

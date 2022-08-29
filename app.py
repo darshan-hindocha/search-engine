@@ -54,7 +54,9 @@ def document():
 
         paragraph_index = int(args['paragraph_index'])
         num_lines = int(args['num_lines'])
-
+        if args['document_index'] not in lib.set_document_ids:
+            # TODO: suggest similar documents
+            abort(400, 'document_index not found in library')
         content = lib.get_paragraph_from_document(args['document_index'], paragraph_index, num_lines)
 
         return {

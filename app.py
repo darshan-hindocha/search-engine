@@ -8,6 +8,11 @@ app = Flask(__name__)
 
 parser = reqparse.RequestParser()
 
+@app.route('/')
+def hello_world():
+    return 'Hello World!'
+
+
 @app.route('/api/search', methods=['GET', 'POST'])
 def search():
     if request.method == 'POST':

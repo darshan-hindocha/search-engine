@@ -6,7 +6,7 @@ html,
 main {
   min-width: 320px;
   scroll-behavior: smooth;
-  @apply bg-white text-dark-grey;
+  @apply bg-white;
 }
 
 @layer base {

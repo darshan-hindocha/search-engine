@@ -8,9 +8,6 @@ api = Api(app)
 
 parser = reqparse.RequestParser()
 
-lib = Library('data')
-print("this ran line 12 of app.py")
-search = SearchEngine(lib)
 
 class SearchEndpoint(Resource):
     def get(self):
@@ -65,5 +62,19 @@ class DocumentAccessEndpoint(Resource):
 api.add_resource(SearchEndpoint, '/api/search')
 api.add_resource(DocumentAccessEndpoint, '/api/document')
 
+
+def load_library():
+    # TODO: Fix the issue where this runs twice on start
+    if 'lib' in globals().keys():
+        print('library already loaded')
+        return
+    global lib
+    lib = Library('data')
+    global search
+    search = SearchEngine(lib)
+    print("loaded the search engine and library!")
+
+
 if __name__ == '__main__':
+    load_library()
     app.run(debug=True)

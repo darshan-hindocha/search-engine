@@ -160,8 +160,6 @@ class SearchEngine:
         heapq.heappush(self.results, (score, (document_index, paragraph_index)))
 
         biggest = heapq.heappop(self.results)
-        print('-----------------------------')
-        print('biggest: ', biggest)
         heapq.heappush(self.results, biggest)
         if len(self.results) > 10:
             heapq.heappop(self.results)

@@ -25,6 +25,11 @@ At the time of writing, the available api endpoints are:
 http://127.0.0.1:5000/api/search
 
 
+## Things that are likely to be out of date
+
+- API Spec details of the API endpoints, including the request and response bodies
+- Requirements.txt the list of dependencies for the search engine may be out of date
+
 # Some Prior Brainstorming, Slightly out of date
 
 ## Technical Requirements

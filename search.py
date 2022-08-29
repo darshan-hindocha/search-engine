@@ -1,5 +1,6 @@
 import heapq
 import pprint
+import PyPDF2
 
 def break_down_data(data_path):
     '''
@@ -18,6 +19,26 @@ def break_down_data(data_path):
                 lines = lines.split('.')
                 lines = [line for line in lines if line not in [' ','']]
                 data.update({file[:-4]: {'paragraphs': lines}})
+
+    for file in os.listdir(data_path):
+        if file.endswith(".pdf"):
+            with open(os.path.join(data_path, file),'rb') as pdfFileObj:
+                pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+                print('Number of Pages: ', pdfReader.numPages)
+                pdf_pages = []
+                for i in range(pdfReader.numPages):
+                    pageObj = pdfReader.getPage(i)
+                    page = pageObj.extractText()
+                    pdf_pages.append(page)
+
+                pdf_lines = []
+                for page in pdf_pages:
+                    lines = page.replace('\n', ' ')
+                    lines = lines.split('.')
+                    lines = [line for line in lines if line not in [' ','']]
+                    pdf_lines += lines
+
+                data.update({file[:-4]: {'paragraphs': pdf_lines}})
 
     return data
 
@@ -73,8 +94,22 @@ class Library:
     def get_document(self, document_id):
         return self.data[document_id]
 
-    def get_paragraph_from_document(self, document_id, paragraph_id):
-        return self.data[document_id]['paragraphs'][paragraph_id]
+    def get_paragraph_from_document(self, document_id, paragraph_id, num_lines=1):
+        if num_lines==1:
+            return self.data[document_id]['paragraphs'][paragraph_id]
+        elif num_lines >= len(self.data[document_id]['paragraphs']):
+            return self.data[document_id]['paragraphs']
+        else:
+            start = paragraph_id - int(num_lines/2)
+            end = paragraph_id + int(num_lines/2)
+            if start < 0:
+                start += abs(start)
+                end += abs(start)
+            if end >= len(self.data[document_id]['paragraphs']):
+                start -= end - len(self.data[document_id]['paragraphs']) - 1
+                end -= end - len(self.data[document_id]['paragraphs']) - 1
+            return self.data[document_id]['paragraphs'][start:end]
+
 
     def get_multiple_paragraphs_from_document(self, document_id, paragraph_id_first, paragraph_id_last):
         return self.data[document_id]['paragraphs'][paragraph_id_first:paragraph_id_last]
@@ -141,11 +176,11 @@ class SearchEngine:
         results = []
         for _ in range(10):
             score, (document_index, paragraph_index) = heapq.heappop(self.results)
-            item = self.library.get_original_paragraph_from_document(document_index, paragraph_index)
+            item = self.library.get_paragraph_from_document(document_index, paragraph_index)
             document = {
                 'document_index': document_index,
-                'paragraph_index_first': paragraph_index,
-                'paragraph_index_last': paragraph_index,
+                'paragraph_index': paragraph_index,
+                'num_lines': 1,
             }
             results.append((item,score,document))
 
@@ -156,6 +191,7 @@ class SearchEngine:
 def main():
 
     lib = Library('testdata')
+    print("this ran line 194 in search")
     search = SearchEngine(lib)
     query = 'covered amiable greater'
     res = search.search(query)

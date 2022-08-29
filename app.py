@@ -8,7 +8,8 @@ api = Api(app)
 
 parser = reqparse.RequestParser()
 
-lib = Library('testdata')
+lib = Library('data')
+print("this ran line 12 of app.py")
 search = SearchEngine(lib)
 
 class SearchEndpoint(Resource):
@@ -20,7 +21,8 @@ class SearchEndpoint(Resource):
         parser.add_argument('refresh')
         args = parser.parse_args()
         if args['refresh'] == 'true':
-            lib = Library('testdata')
+            lib = Library('data')
+            print("this ran line 25 of app.py")
             search = SearchEngine(lib)
             print("refreshed the search engine and library!")
         results = search.search(args['query'])
@@ -44,32 +46,24 @@ class SearchEndpoint(Resource):
 class DocumentAccessEndpoint(Resource):
     def post(self):
         parser.add_argument('document_index')
-        parser.add_argument('paragraph_index_first')
-        parser.add_argument('paragraph_index_last')
+        parser.add_argument('paragraph_index')
+        parser.add_argument('num_lines')
         args = parser.parse_args()
 
-        paragraph_start = int(args['paragraph_index_first'])
-        paragraph_end = int(args['paragraph_index_last'])
-        if paragraph_start > paragraph_end:
-            abort(400, 'paragraph_index_first must be less than or equal to paragraph_index_last')
+        paragraph_index = int(args['paragraph_index'])
+        num_lines = int(args['num_lines'])
 
-
-        try:
-            size_of_document =len(lib.data[args['document_index']]['paragraphs'])
-            if paragraph_end < 0 or paragraph_end >= size_of_document:
-                abort(400, description='paragraph_index_first must be between 0 and {}'.format(size_of_document-1))
-            content = lib.get_multiple_paragraphs_from_document(args['document_index'], paragraph_start, paragraph_end)
-        except IndexError:
-            return {'message': 'document_index or paragraph_index_first or paragraph_index_last is out of range'}
+        content = lib.get_paragraph_from_document(args['document_index'], paragraph_index, num_lines)
 
         return {
             'content': content,
             'document_index': args['document_index'],
-            'paragraph_index_first': args['paragraph_index_first'],
-            'paragraph_index_last': args['paragraph_index_last'],
+            'paragraph_index': args['paragraph_index'],
+            'num_lines': args['num_lines'],
         }
 
 api.add_resource(SearchEndpoint, '/api/search')
 api.add_resource(DocumentAccessEndpoint, '/api/document')
+
 if __name__ == '__main__':
     app.run(debug=True)

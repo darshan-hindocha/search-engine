@@ -8,6 +8,7 @@ app = Flask(__name__)
 
 parser = reqparse.RequestParser()
 
+
 @app.route('/')
 def hello_world():
     return 'Hello World!'
@@ -29,15 +30,15 @@ def search():
 
         res = {
             'query': args['query'],
+            'results': []
         }
 
         for i, (r, s, d) in enumerate(results):
-            res.update({
-                'result_{}'.format(i+1): {
-                    'score': s,
-                    'result': r,
-                    'document': d,
-                },
+            res['results'].append({
+                'score': s,
+                'result': r,
+                'document': d,
+                'index': i + 1
             })
         return res
     else:
@@ -79,6 +80,7 @@ def load_library():
     global search
     search = SearchEngine(lib)
     print("loaded the search engine and library!")
+
 
 load_library()
 

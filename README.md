@@ -30,3 +30,6 @@ http://127.0.0.1:5000/api/search
 - API Spec details of the API endpoints, including the request and response bodies
 - Requirements.txt the list of dependencies for the search engine may be out of date
 
+## Deployment
+
+Deployed using pythonanywhere (which is awesome, go check it out). The pythonanywhere server is protected with a username and password, as a makeshift beta. Get it in touch with me if you want the credentials to interact with the APIs :) 

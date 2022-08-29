@@ -2,6 +2,8 @@
 
 ## Setup
 
+Clone the repo and add the pdfs that you want to index (make available for search) inside the `data/` folder
+
 To run the search engine, set up a virtual environment and install the requirements.
 
 You can install the requirements using

@@ -1,5 +1,6 @@
 from flask import Flask, abort
 from flask_restful import Resource, Api, reqparse
+from socket import gethostname
 
 from search import SearchEngine, Library
 
@@ -74,7 +75,9 @@ def load_library():
     search = SearchEngine(lib)
     print("loaded the search engine and library!")
 
+load_library()
 
 if __name__ == '__main__':
     load_library()
-    app.run(debug=True)
+    if 'liveconsole' not in gethostname():
+        app.run(debug=True)

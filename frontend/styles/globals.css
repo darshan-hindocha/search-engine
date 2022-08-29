@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+main {
+  min-width: 320px;
+  scroll-behavior: smooth;
+  @apply bg-white text-dark-grey;
+}
+
+@layer base {
+  h1 {
+    @apply font-ovo text-h1Mobile lg:text-h1Desktop;
+  }
+
+  h2 {
+    @apply font-ovo text-h2Mobile lg:text-h2Desktop;
+  }
+
+  h3 {
+    @apply font-ovo text-h3Mobile lg:text-h3Desktop;
+  }
+
+  h4 {
+    @apply font-montserrat text-h4Mobile lg:text-h4Desktop;
+  }
+
+  p {
+    @apply font-montserrat text-baseMobile lg:text-baseDesktop;
+  }
+}
+
+#__next {
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}

@@ -1,6 +1,7 @@
 import heapq
 import pprint
 import PyPDF2
+import os
 
 def break_down_data(data_path):
     '''
@@ -10,7 +11,9 @@ def break_down_data(data_path):
     '''
 
     data = {}
-    import os, re
+
+    cwd= os.getcwd()
+    data_path = os.path.join(cwd, data_path)
     for file in os.listdir(data_path):
         if file.endswith(".txt"):
             with open(os.path.join(data_path, file)) as f:

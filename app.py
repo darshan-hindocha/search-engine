@@ -1,19 +1,16 @@
-from flask import Flask, abort
-from flask_restful import Resource, Api, reqparse
+from flask import Flask, abort, request
+from flask_restful import reqparse
 from socket import gethostname
 
 from search import SearchEngine, Library
 
 app = Flask(__name__)
-api = Api(app)
 
 parser = reqparse.RequestParser()
 
-
-class SearchEndpoint(Resource):
-    def get(self):
-        return {'message': 'Hello, World!'}
-    def post(self):
+@app.route('/api/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST':
         global search
         parser.add_argument('query')
         parser.add_argument('refresh')
@@ -38,11 +35,13 @@ class SearchEndpoint(Resource):
                 },
             })
         return res
+    else:
+        return {'message': 'Hello, World!'}
 
 
-
-class DocumentAccessEndpoint(Resource):
-    def post(self):
+@app.route('/api/document', methods=['GET', 'POST'])
+def document():
+    if request.method == 'POST':
         parser.add_argument('document_index')
         parser.add_argument('paragraph_index')
         parser.add_argument('num_lines')
@@ -59,9 +58,8 @@ class DocumentAccessEndpoint(Resource):
             'paragraph_index': args['paragraph_index'],
             'num_lines': args['num_lines'],
         }
-
-api.add_resource(SearchEndpoint, '/api/search')
-api.add_resource(DocumentAccessEndpoint, '/api/document')
+    else:
+        return {'message': 'Hello, World!'}
 
 
 def load_library():

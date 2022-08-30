@@ -6,7 +6,6 @@ import {AuthProvider} from "../context/auth";
 
 const theme = createTheme({
     palette: {
-        mode: 'light',
         primary: {
             light: '#f78166',
             main: '#238636',

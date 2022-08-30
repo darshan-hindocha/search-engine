@@ -43,7 +43,7 @@ const Home: NextPage = () => {
 
     return (
         <Container>
-            <h1>Search Engine <span className="italic text-green-mid align-middle text-baseDesktop">(BETA)</span></h1>
+            <h1>Search Engine <span className="italic text-green-mid align-middle text-baseDesktop">(NOT EVEN BETA)</span></h1>
 
             <p className="mt-4">
                 A search engine for your content

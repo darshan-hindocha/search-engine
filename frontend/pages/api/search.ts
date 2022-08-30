@@ -55,24 +55,6 @@ export default async (req: NextApiRequest, res: NextApiResponse<Response | ErrRe
         });
     }
 
-    try {
-        res.json({
-            'searchResultItems': [
-                {
-                    document: {
-                        document_index: "Document Name",
-                        num_lines: 1,
-                        paragraph_index: 1,
-                    },
-                    index: 0,
-                    result: "The search result",
-                    score: 1,
-                }
-            ]
-        });
-    } catch (e) {
-        res.status(400).json({error: (e as Error).message});
-    }
 };
 
 

@@ -43,7 +43,8 @@ const Home: NextPage = () => {
 
     return (
         <Container>
-            <h1>Search Engine <span className="italic text-green-mid align-middle text-baseDesktop">(NOT EVEN BETA)</span></h1>
+            <h1>Search Engine <span
+                className="italic text-green-mid align-middle text-baseDesktop">(NOT EVEN BETA)</span></h1>
 
             <p className="mt-4">
                 A search engine for your content
@@ -111,15 +112,18 @@ const Home: NextPage = () => {
                                                document_index: string
                                            }
                                        },
-                                       index:number
+                                       index: number
                     ) => (
                         <div key={result} className="flex flex-col">
-                            <h3 className="text-green-mid">{'Score: ' + score}</h3>
-                            <h3>{'Content: ' + result}</h3>
-                            <p>{'Search Result Item: ' + (index+1)}</p>
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <h3>{(index + 1) + '. ' + document_index}</h3>
+                                </div>
+                                <h4 className="text-green-mid">{'Score: ' + score}</h4>
+                            </div>
                             <div className="flex items-center gap-4">
 
-                                <p className=""><span className="italic">From Document: </span>{document_index}</p>
+                                <p className="">{result}</p>
                             </div>
                         </div>
                     )))}

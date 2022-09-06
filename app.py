@@ -38,7 +38,8 @@ def search():
                 'score': s,
                 'result': r,
                 'document': d,
-                'index': i + 1
+                'index': i + 1,
+                # 'metadata': md
             })
         return res
     else:

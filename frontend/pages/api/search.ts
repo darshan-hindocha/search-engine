@@ -41,7 +41,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Response | ErrRe
     } else if (req.method === 'POST') {
         const axiosResponse = await search(req.body.query);
 
-        console.log('axiosResponse', axiosResponse);
+        console.log('axiosResponse', axiosResponse['results'][0]);
 
         const response = axiosResponse['results'] as SearchResult[];
 
@@ -58,15 +58,22 @@ export default async (req: NextApiRequest, res: NextApiResponse<Response | ErrRe
 };
 
 
-function search(query: string) {
+function search(query: string, refresh: boolean = false) {
     var data = JSON.stringify({
-        "query": "Swamishri smiled",
-        "refresh": false
+        "query": query,
+        "refresh": refresh
     });
 
-    var config: AxiosRequestConfig<any> = {
+    var base = ""
+    if (process.env.VERCEL_ENV === 'development') {
+        base = 'http://127.0.0.1:5000'
+    } else {
+        base = process.env.SEARCH_ENDPOINT_AUTH ? process.env.SEARCH_ENDPOINT_AUTH : ''
+    }
+
+    var config: AxiosRequestConfig = {
         method: 'post',
-        url: process.env.SEARCH_ENDPOINT + '/api/search',
+        url: base + '/api/search',
         headers: {
             'Authorization': process.env.SEARCH_ENDPOINT_AUTH ? process.env.SEARCH_ENDPOINT_AUTH : '',
             'Content-Type': 'application/json'
@@ -76,7 +83,7 @@ function search(query: string) {
 
     return axios(config)
         .then(function (response) {
-            console.log(JSON.stringify(response.data));
+            console.log(JSON.stringify(response.data['results'][0]));
             return response.data;
         })
         .catch(function (error) {

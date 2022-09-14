@@ -1,5 +1,6 @@
 # Search Engine
 
+
 - `app.py` - flask application config, including run app command and routes
 - `search.py` - library and search class. library class handles the documents store. allowing you to get documents based on indexes. search class handles the search operation. allowing you to find the high scoring matches in the documents for your search query.
 - `data/**` - pdf data that you want to parse goes in here. when the app starts up, it reads and indexes all the pdf files from here into data structures held in memory by the server.

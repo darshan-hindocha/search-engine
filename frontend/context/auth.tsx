@@ -20,6 +20,10 @@ const Context = createContext<AuthContextInterface>({
 
 
 export function AuthProvider({children}: { children: ReactNode }) {
+    // TODO: learn how to write react code
+    // const [auth, setAuth] = useState((process.env.VERCEL_ENV === 'development'));
+    // const [approved, setApproved] = useState((process.env.VERCEL_ENV === 'development'));
+    // const [uid, setUid] = useState((process.env.VERCEL_ENV === 'development') ? "test" : "");
     const [auth, setAuth] = useState(true);
     const [approved, setApproved] = useState(true);
     const [uid, setUid] = useState("");

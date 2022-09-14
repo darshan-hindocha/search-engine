@@ -44,9 +44,9 @@ def search():
     else:
         return {'message': 'Hello, World!'}
 
-@app.route('/api/get-name-of-docs-in-library', methods=['GET'])
+@app.route('/api/get-num-of-docs-in-library', methods=['GET'])
 def get_num_docs():
-    return {'num_docs': lib.document_ids}
+    return {'num_docs': len(lib.document_ids)}
 
 @app.route('/api/document', methods=['GET', 'POST'])
 def document():

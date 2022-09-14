@@ -70,6 +70,15 @@ def document():
     else:
         return {'message': 'Hello, World!'}
 
+@app.route('/v2/api/search', methods=['GET', 'POST'])
+def search_v2():
+    if request.method == 'GET':
+        return {'message': 'Hello, World!'}
+
+    parser.add_argument('query')
+    args = parser.parse_args()
+
+    # conduct search process yielding results array with book id, paragraph id, and score
 
 def load_library():
     # TODO: Fix the issue where this runs twice on start

@@ -4,6 +4,7 @@ import PyPDF2
 import os
 import re
 from thefuzz import fuzz
+import json
 
 
 # load pdf file -> convert to json -> parse -> return in memory
@@ -13,9 +14,7 @@ def break_down_data(data_path):
     Ingest Text Files as a dictionary of lists (since the text data does not need later inserts we can use a list)
     Each list will be a list of strings for each paragraph (40 words per paragraph)
     '''
-
     data = {}
-
     cwd= os.getcwd()
     data_path = os.path.join(cwd, data_path)
     for file in os.listdir(data_path):
@@ -29,6 +28,10 @@ def break_down_data(data_path):
 
     for file in os.listdir(data_path):
         if file.endswith(".pdf"):
+            if os.path.exists(os.path.join(data_path, file[:-4]+'.json')):
+                with open(os.path.join(data_path, file[:-4]+'.json')) as f:
+                    data.update(json.load(f))
+                return data
             with open(os.path.join(data_path, file),'rb') as pdfFileObj:
                 pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
                 print('Number of Pages: ', pdfReader.numPages)
@@ -46,6 +49,9 @@ def break_down_data(data_path):
                     pdf_lines += lines
 
                 data.update({file[:-4]: {'paragraphs': pdf_lines}})
+
+            with open(os.path.join(data_path, file[:-4]+'.json'), 'w') as f:
+                json.dump(data, f)
 
     return data
 
@@ -147,8 +153,8 @@ class SearchEngine:
 
         biggest = heapq.heappop(self.results)
         heapq.heappush(self.results, biggest)
-        if len(self.results) > 10:
-            heapq.heappop(self.results)
+        if len(self.results) > 100:
+            _ = heapq.heappop(self.results)
 
     def search_bag_of_words(self):
         return
@@ -164,6 +170,21 @@ class SearchEngine:
         results = []
         for _ in range(10):
             score, (document_index, paragraph_index) = heapq.heappop(self.results)
+            item = self.library.get_paragraph_from_document(document_index, paragraph_index)
+            document = {
+                'document_index': document_index,
+                'paragraph_index': paragraph_index,
+                'num_lines': 1,
+            }
+            results.append((item,score,document))
+
+        results = results[::-1]
+        return results
+
+    def searchV2(self, query):
+
+        results = heapq.nlargest(10, self.results)
+        for score, (document_index, paragraph_index) in results:
             item = self.library.get_paragraph_from_document(document_index, paragraph_index)
             document = {
                 'document_index': document_index,

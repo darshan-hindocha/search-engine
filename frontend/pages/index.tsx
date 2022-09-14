@@ -114,7 +114,7 @@ const Home: NextPage = () => {
                                        },
                                        index: number
                     ) => (
-                        <div key={result} className="flex flex-col">
+                        <div key={document_index + score.toString() + result.toString() + index.toString()} className="flex flex-col">
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h3>{(index + 1) + '. ' + document_index}</h3>

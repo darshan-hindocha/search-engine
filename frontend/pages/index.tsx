@@ -3,16 +3,19 @@ import {SetStateAction, useState} from "react";
 import Container from "../Components/Container";
 import {useAuthContext} from "../context/auth";
 import {TextField} from "@mui/material";
+import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import AddIcon from '@mui/icons-material/Add';
 import LoadingButton from '@mui/lab/LoadingButton';
 import cn from 'classnames';
 import axios from 'axios';
-import {SearchResult} from "./api/search";
+import {SearchResultV2} from "./api/searchV2";
 
 type Response = {
     data: {
         'query': string,
-        'searchResultItems': SearchResult[];
+        'searchResultItems': SearchResultV2[];
     };
     status: number;
 }
@@ -21,12 +24,12 @@ type Response = {
 const Home: NextPage = () => {
     const {auth, setAuth, setApproved, approved, uid, setUid} = useAuthContext();
     const [query, setQuery] = useState("");
-    const [searchResults, setSearchResults] = useState<SearchResult[] | null>(null);
+    const [searchResults, setSearchResults] = useState<SearchResultV2[] | null>(null);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = () => {
         setLoading(true);
-        axios.post('/api/search', {
+        axios.post('/api/searchV2', {
             query
         }, {
             headers: {
@@ -43,7 +46,8 @@ const Home: NextPage = () => {
 
     return (
         <Container>
-            <h1>Search Engine <span className="italic text-green-mid align-middle text-baseDesktop">(NOT EVEN BETA)</span></h1>
+            <h1>Search Engine <span
+                className="italic text-green-mid align-middle text-baseDesktop">(NOT EVEN BETA)</span></h1>
 
             <p className="mt-4">
                 A search engine for your content
@@ -96,30 +100,40 @@ const Home: NextPage = () => {
                     </div>
                 )}
             </div>
-            <div className="flex flex-col gap-8 mt-4">
+            <div className="flex flex-col gap-12 mt-4">
                 {(searchResults) && (
                     searchResults.map(({
-                                           result,
-                                           score,
-                                           document: {
-                                               document_index
-                                           }
+                                           book_title,
+                                           chapter_title,
+                                           index,
+                                           paragraph_index,
+                                           sentence_index,
+                                           text
                                        }: {
-                                           result: string,
-                                           score: number,
-                                           document: {
-                                               document_index: string
-                                           }
+                                           book_title: string,
+                                           chapter_title: string,
+                                           index: number,
+                                           paragraph_index: number,
+                                           sentence_index: number,
+                                           text: string
                                        },
-                                       index:number
                     ) => (
-                        <div key={result} className="flex flex-col">
-                            <h3 className="text-green-mid">{'Score: ' + score}</h3>
-                            <h3>{'Content: ' + result}</h3>
-                            <p>{'Search Result Item: ' + (index+1)}</p>
-                            <div className="flex items-center gap-4">
-
-                                <p className=""><span className="italic">From Document: </span>{document_index}</p>
+                        <div
+                            key={sentence_index.toString() + paragraph_index.toString() + index.toString()}
+                            className="flex flex-row space-between"
+                        >
+                            <div className="flex flex-col w-4/5">
+                                <div className="flex flex-row items-center py-2">
+                                    <p className="opacity-70 text-sx py-1">{chapter_title}</p>
+                                    <ArrowForwardIosIcon style={{fontSize: "small"}} />
+                                    <p className="text-grey-500 opacity-50 py-1 text-sx">{book_title}</p>
+                                </div>
+                                <p>{text}</p>
+                            </div>
+                            <div className="flex pt-1 h-full items-center justify-center">
+                                <Button endIcon={<AddIcon/>}>
+                                    Add
+                                </Button>
                             </div>
                         </div>
                     )))}

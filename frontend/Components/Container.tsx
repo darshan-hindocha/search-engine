@@ -3,6 +3,7 @@ import Head from "next/head";
 import NextLink from "next/link";
 import cn from 'classnames';
 import {useRouter} from "next/router";
+import {useUser} from '@auth0/nextjs-auth0';
 
 function NavItem({href, text}: { href: string, text: string }) {
     const router = useRouter();
@@ -15,7 +16,7 @@ function NavItem({href, text}: { href: string, text: string }) {
                     isActive
                         ? 'font-semibold text-gray-900'
                         : 'font-normal text-gray-800',
-                    'hidden md:inline-block p-1 sm:px-3 sm:py-2 rounded-lg hover:bg-gray-300 transition-all'
+                    'inline-block p-1 sm:py-2 rounded-lg hover:bg-gray-300 transition-all'
                 )}
             >
                 <span className="capsize">{text}</span>
@@ -26,6 +27,7 @@ function NavItem({href, text}: { href: string, text: string }) {
 
 
 export default function Container({children}: { children: ReactNode }) {
+    const {user, error, isLoading} = useUser();
 
     const meta = {
         title: '(BETA) Search Engine',
@@ -44,12 +46,18 @@ export default function Container({children}: { children: ReactNode }) {
                 <meta property="og:title" content={meta.title}/>
             </Head>
             <nav
-                className="fixed z-10 w-full px-10 py-2 bg-opacity-90 bg-gray-200"
+                className="fixed z-10 flex w-full justify-between px-4 md:px-10 py-2 bg-opacity-90 bg-gray-200"
             >
                 <div>
                     <NavItem href="/" text="Home"/>
-                    <NavItem href="/login" text="Login"/>
                     <NavItem href="/documents" text="Documents"/>
+                </div>
+                <div>
+                    {user?.sid ?
+                        <NavItem href="/api/auth/logout" text="Logout"/>
+                        :
+                        <NavItem href="/api/auth/login" text="Login"/>
+                    }
                 </div>
             </nav>
             <div className="flex flex-col sm:items-center">

@@ -4,11 +4,12 @@ from socket import gethostname
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy import desc, Index
 from typing import List
 import json, os
 from dotenv import load_dotenv
+import uuid
 
 load_dotenv()
 
@@ -17,11 +18,13 @@ from search import SearchEngine, Library
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URI")
 
+
 db = SQLAlchemy(app)
 
 
 class TSVector(sa.types.TypeDecorator):
     impl = TSVECTOR
+
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,6 +49,7 @@ class Book(db.Model):
             self.chapters.append(chapter)
         db.session.commit()
 
+
 class Chapter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -63,11 +67,11 @@ class Chapter(db.Model):
         self.title = _title
         self.chapter_number = _chapter_number
 
-
     def add_paragraphs_to_chapter(self, _chapter_id, _paragraphs):
         for paragraph in _paragraphs:
             self.paragraphs.append(paragraph)
         db.session.commit()
+
 
 class Paragraph(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,17 +96,18 @@ class Paragraph(db.Model):
             paragraph.sentences.append(sentence)
         db.session.commit()
 
+
 class Sentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
     paragraph_id = db.Column(db.Integer, db.ForeignKey('paragraph.id'), nullable=False)
-    __ts_vector__ = db.Column(TSVector(),db.Computed(
-         "to_tsvector('english', text)",
-         persisted=True))
+    __ts_vector__ = db.Column(TSVector(), db.Computed(
+        "to_tsvector('english', text)",
+        persisted=True))
     __table_args__ = (Index('ix_video___ts_vector__',
-          __ts_vector__, postgresql_using='gin'),)
+                            __ts_vector__, postgresql_using='gin'),)
 
     def __repr__(self):
         return ''.join([
@@ -116,20 +121,88 @@ class Sentence(db.Model):
         self.text = _text
 
 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    uid = db.Column(db.Text, nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    documents = db.relationship('Document', backref='user', lazy=True)
+
+    def __repr__(self):
+        return ''.join([
+            'User: ',
+            self.name
+        ])
+
+    def __init__(self, name, uid):
+        self.name = name
+        self.uid = uid
+
+    def add_document_to_user(self, document):
+        self.documents.append(document)
+        db.session.commit()
+
+
+class Document(db.Model):
+    uuid = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    extracts = db.relationship('Extract', backref='document', lazy=True)
+
+    def __repr__(self):
+        return ''.join([
+            'Document: ',
+            self.text
+        ])
+
+    def __init__(self, user_id, name):
+        self.user_id = user_id
+        self.name = name
+
+    def add_extract(self, extract):
+        self.extracts.append(extract)
+        db.session.commit()
+
+
+class Extract(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(UUID(as_uuid=True), db.ForeignKey('document.uuid'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
+    paragraph_id = db.Column(db.Integer, db.ForeignKey('paragraph.id'), nullable=False)
+    sentence_id = db.Column(db.Integer, db.ForeignKey('sentence.id'), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return ''.join([
+            'Extract: ',
+            self.text
+        ])
+
+    def __init__(self, document_id, sentence: Sentence):
+        self.document_id = document_id
+        self.book_id = sentence.book_id,
+        self.chapter_id = sentence.chapter_id,
+        self.paragraph_id = sentence.paragraph_id,
+        self.sentence_id = sentence.id,
+        self.text = sentence.text
+
 
 @dataclass
 class SentenceInput:
     text: str
+
 
 @dataclass
 class ParagraphInput:
     text: str
     sentences: List[SentenceInput]
 
+
 @dataclass
 class ChapterInput:
     title: str
     paragraphs: List[ParagraphInput]
+
 
 @dataclass
 class BookInput:
@@ -164,87 +237,7 @@ def load_database_from_json(folder_path: str):
                     book.add_chapters_to_book(book.id, [chapter])
 
 
-
-
 parser = reqparse.RequestParser()
-
-## V1 --------------------------------
-
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
-
-@app.route('/api/search', methods=['GET', 'POST'])
-def search():
-    if request.method == 'POST':
-        global search
-        parser.add_argument('query')
-        parser.add_argument('refresh')
-        args = parser.parse_args()
-        if args['refresh'] == 'true':
-            lib = Library('data')
-            print("this ran line 25 of app.py")
-            search = SearchEngine(lib)
-            print("refreshed the search engine and library!")
-        results = search.search(args['query'])
-
-        res = {
-            'query': args['query'],
-            'results': []
-        }
-
-        for i, (r, s, d) in enumerate(results):
-            res['results'].append({
-                'score': s,
-                'result': r,
-                'document': d,
-                'index': i + 1
-            })
-        return res
-    else:
-        return {'message': 'Hello, World!'}
-
-@app.route('/api/get-name-of-docs-in-library', methods=['GET'])
-def get_num_docs():
-    return {'num_docs': lib.document_ids}
-
-@app.route('/api/document', methods=['GET', 'POST'])
-def document():
-    if request.method == 'POST':
-        parser.add_argument('document_index')
-        parser.add_argument('paragraph_index')
-        parser.add_argument('num_lines')
-        args = parser.parse_args()
-
-        paragraph_index = int(args['paragraph_index'])
-        num_lines = int(args['num_lines'])
-        if args['document_index'] not in lib.set_document_ids:
-            # TODO: suggest similar documents
-            abort(400, 'document_index not found in library')
-        content = lib.get_paragraph_from_document(args['document_index'], paragraph_index, num_lines)
-
-        return {
-            'content': content,
-            'document_index': args['document_index'],
-            'paragraph_index': args['paragraph_index'],
-            'num_lines': args['num_lines'],
-        }
-    else:
-        return {'message': 'Hello, World!'}
-
-
-def load_library():
-    # TODO: Fix the issue where this runs twice on start
-    if 'lib' in globals().keys():
-        print('library already loaded')
-        return
-    global lib
-    lib = Library('data')
-    global search
-    search = SearchEngine(lib)
-    print("loaded the search engine and library!")
-
 
 ## V2 --------------------------------
 
@@ -290,7 +283,127 @@ def searchV2():
     else:
         return {'message': 'Hello, World!'}
 
+@app.route('/v2/api/register-user', methods=['GET', 'POST'])
+def register_user():
+    try:
+        parser.add_argument('name')
+        parser.add_argument('uid')
+        args = parser.parse_args()
+
+        u = User.query.filter_by(uid=args.uid).all()
+        if u is not None:
+            return {'message': 'User already exists','registered': True}
+        user = User(args.name, args.uid)
+        db.session.add(user)
+        db.session.commit()
+        return {'message': 'User registered successfully', 'registered': True}
+    except:
+        db.session.rollback()
+        return {'message': 'register-user api failed'}
+
+@app.route('/v2/api/get-users-documents', methods=['GET', 'POST'])
+def get_users_documents():
+    parser.add_argument('uid')
+    args = parser.parse_args()
+
+    user = User.query.filter_by(uid=args.uid).first()
+    if user is None:
+        user = User("", args.uid)
+        db.session.add(user)
+        db.session.commit()
+
+    documents = user.documents
+
+    res = {
+        'user_id': args['uid'],
+        'documents': []
+    }
+
+    for i, document in enumerate(documents):
+        res['documents'].append({
+            'document_uuid': document.uuid,
+            'document_name': document.name,
+            'number_of_extracts': len(document.extracts),
+            'index': i + 1
+        })
+    return res
+
+@app.route('/v2/api/create-document', methods=['GET', 'POST'])
+def create_document():
+    parser.add_argument('document_name')
+    parser.add_argument('uid')
+    args = parser.parse_args()
+    user = User.query.filter_by(uid=args.uid).first()
+    if user is None:
+        return {'message': 'User not found'}, 404
+
+    document = Document(user.id, args.document_name)
+    db.session.add(document)
+    db.session.commit()
+    return {'document_uuid': document.uuid}
+
+
+@app.route('/v2/api/add-extract-to-document', methods=['GET', 'POST'])
+def add_extract_to_document():
+    parser.add_argument('sentence_index')
+    parser.add_argument('user_id')
+    parser.add_argument('document_uuid')
+    args = parser.parse_args()
+
+    user = User.query.filter_by(uid=args.user_id).first()
+    if user is None:
+        abort(400, 'user_id not found in database')
+
+    sentence = Sentence.query.filter_by(id=args.sentence_index).first()
+    if sentence is None:
+        abort(400, 'sentence not found in database')
+
+    document = Document.query.filter_by(id=args.document_id).first()
+    if document is None:
+        abort(400, 'document not found in database')
+    extract = Extract(document["uuid"], sentence)
+    db.session.add(extract)
+    db.session.commit()
+
+    document.add_extract(extract)
+    db.session.add(document)
+    db.session.commit()
+
+    return {
+        'document_uuid': document["uuid"],
+    }
+
+
+@app.route('/v2/api/get-document', methods=['GET', 'POST'])
+def get_document():
+    parser.add_argument('document_uuid')
+    args = parser.parse_args()
+
+    document = Document.query.filter_by(uuid=args.document_uuid).first()
+    if document is None:
+        abort(400, 'document not found in database')
+
+    extracts = document.extracts
+
+    res = {
+        'document_uuid': args['document_uuid'],
+        'document_name': document.name,
+        'extracts': []
+    }
+
+    for i, extract in enumerate(extracts):
+        res['extracts'].append({
+            'text': extract.sentence.text,
+            'book_title': extract.sentence.paragraph.chapter.book.title,
+            'chapter_title': extract.sentence.paragraph.chapter.title,
+            'paragraph_index': extract.sentence.paragraph.id,
+            'sentence_index': extract.sentence.id,
+            'index': i + 1
+        })
+    return res
+
 
 if __name__ == '__main__':
     if 'liveconsole' not in gethostname():
-        app.run(debug=True)
+        app.run(debug=True, port=5001)
+        reset_db()

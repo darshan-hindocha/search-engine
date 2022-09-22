@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import type {AppProps} from "next/app";
 import {ThemeProvider as NextTheme} from 'next-themes';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
-import {AuthProvider} from "../context/auth";
+import { UserProvider } from '@auth0/nextjs-auth0';
 
 const theme = createTheme({
     palette: {
@@ -51,9 +51,9 @@ function MyApp({Component, pageProps}: AppProps) {
         <>
             <NextTheme attribute="class">
                 <ThemeProvider theme={theme}>
-                    <AuthProvider>
+                    <UserProvider>
                         <Component {...pageProps} />
-                    </AuthProvider>
+                    </UserProvider>
                 </ThemeProvider>
             </NextTheme>
         </>

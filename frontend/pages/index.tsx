@@ -24,6 +24,7 @@ export const getServerSideProps = withPageAuthRequired();
 //@ts-ignore
 const Home: NextPage = ({user}) => {
     const [query, setQuery] = useState("");
+    const [nothingFound, setNothingFound] = useState(false)
     const [searchResults, setSearchResults] = useState<SearchResultV2[] | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -38,6 +39,9 @@ const Home: NextPage = ({user}) => {
         }).then((res: Response) => {
             setLoading(false);
             setSearchResults(res.data.searchResultItems);
+            if (res.data.searchResultItems.length === 0) {
+                setNothingFound(true)
+            }
         }).catch((err: { error: string; }) => {
             setLoading(false);
             alert(err.error);
@@ -81,6 +85,7 @@ const Home: NextPage = ({user}) => {
                 </div>
             </div>
             <div className="flex flex-col gap-12 mt-4">
+                {nothingFound && <h4>Nothing Found :(</h4>}
                 {(searchResults) && (
                     searchResults.map(({
                                            book_title,

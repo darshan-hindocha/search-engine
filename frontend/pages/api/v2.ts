@@ -5,7 +5,7 @@ import axios, {AxiosRequestConfig} from "axios";
 export default async (req: Req, res: NextApiResponse) => {
     var base = ""
     if (process.env.VERCEL_ENV === 'development') {
-        base = 'http://127.0.0.1:5001'
+        base = 'http://127.0.0.1:5000'
     } else {
         base = process.env.SEARCH_ENDPOINT_AUTH ? process.env.SEARCH_ENDPOINT_AUTH : ''
     }

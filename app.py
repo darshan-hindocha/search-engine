@@ -18,7 +18,6 @@ from search import SearchEngine, Library
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URI")
 
-
 db = SQLAlchemy(app)
 
 
@@ -151,7 +150,7 @@ class Document(db.Model):
     def __repr__(self):
         return ''.join([
             'Document: ',
-            self.text
+            self.name
         ])
 
     def __init__(self, user_id, name):
@@ -159,8 +158,11 @@ class Document(db.Model):
         self.name = name
 
     def add_extract(self, extract):
+        if extract in self.extracts:
+            return
         self.extracts.append(extract)
         db.session.commit()
+        return
 
 
 class Extract(db.Model):
@@ -239,6 +241,7 @@ def load_database_from_json(folder_path: str):
 
 parser = reqparse.RequestParser()
 
+
 ## V2 --------------------------------
 
 @app.route('/load', methods=['GET'])
@@ -283,6 +286,7 @@ def searchV2():
     else:
         return {'message': 'Hello, World!'}
 
+
 @app.route('/v2/api/register-user', methods=['GET', 'POST'])
 def register_user():
     try:
@@ -292,7 +296,7 @@ def register_user():
 
         u = User.query.filter_by(uid=args.uid).all()
         if u is not None:
-            return {'message': 'User already exists','registered': True}
+            return {'message': 'User already exists', 'registered': True}
         user = User(args.name, args.uid)
         db.session.add(user)
         db.session.commit()
@@ -300,6 +304,7 @@ def register_user():
     except:
         db.session.rollback()
         return {'message': 'register-user api failed'}
+
 
 @app.route('/v2/api/get-users-documents', methods=['GET', 'POST'])
 def get_users_documents():
@@ -328,6 +333,7 @@ def get_users_documents():
         })
     return res
 
+
 @app.route('/v2/api/create-document', methods=['GET', 'POST'])
 def create_document():
     parser.add_argument('document_name')
@@ -346,11 +352,12 @@ def create_document():
 @app.route('/v2/api/add-extract-to-document', methods=['GET', 'POST'])
 def add_extract_to_document():
     parser.add_argument('sentence_index')
-    parser.add_argument('user_id')
+    parser.add_argument('uid')
     parser.add_argument('document_uuid')
+    parser.add_argument('document_name')
     args = parser.parse_args()
 
-    user = User.query.filter_by(uid=args.user_id).first()
+    user = User.query.filter_by(uid=args.uid).first()
     if user is None:
         abort(400, 'user_id not found in database')
 
@@ -358,19 +365,20 @@ def add_extract_to_document():
     if sentence is None:
         abort(400, 'sentence not found in database')
 
-    document = Document.query.filter_by(id=args.document_id).first()
-    if document is None:
-        abort(400, 'document not found in database')
-    extract = Extract(document["uuid"], sentence)
+    if args.document_uuid is None or args.document_uuid == "":
+        document = Document(user.id, args.document_name)
+        db.session.add(document)
+    else:
+        document = Document.query.filter_by(uuid=args.document_uuid).first()
+    extract = Extract(document.uuid, sentence)
     db.session.add(extract)
-    db.session.commit()
 
     document.add_extract(extract)
     db.session.add(document)
     db.session.commit()
 
     return {
-        'document_uuid': document["uuid"],
+        'document_uuid': document.uuid,
     }
 
 
@@ -405,5 +413,5 @@ def get_document():
 
 if __name__ == '__main__':
     if 'liveconsole' not in gethostname():
-        app.run(debug=True, port=5001)
+        app.run(debug=True, port=5000)
         reset_db()

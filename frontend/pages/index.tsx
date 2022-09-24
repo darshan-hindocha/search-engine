@@ -1,7 +1,13 @@
 import type {NextPage} from 'next'
-import {SetStateAction, useState} from "react";
+import {useEffect, useState} from "react";
+import CustomDialogActions from "../Components/Accessories/CustomDialogActions";
 import Container from "../Components/Container";
 import {TextField} from "@mui/material";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -11,6 +17,7 @@ import cn from 'classnames';
 import axios from 'axios';
 import {SearchResultV2} from "./api/searchV2";
 import {withPageAuthRequired} from "@auth0/nextjs-auth0";
+import {QuoteToAdd} from "../Components/Accessories/CustomButtonGroup";
 
 type Response = {
     data: {
@@ -19,13 +26,47 @@ type Response = {
     };
     status: number;
 }
+
 export const getServerSideProps = withPageAuthRequired();
 
 //@ts-ignore
 const Home: NextPage = ({user}) => {
     const [query, setQuery] = useState("");
-    const [searchResults, setSearchResults] = useState<SearchResultV2[] | null>(null);
+    const [listOfDocuments, setListOfDocuments] = useState<Array<{ docName: string, docUUID: string }>>([])
+    const [searchResults, setSearchResults] = useState<SearchResultV2[] | null>();
     const [loading, setLoading] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+    const [quoteToAdd, setQuoteToAdd] = useState<QuoteToAdd>({
+        bookTitle: "",
+        chapterTitle: "",
+        text: "",
+        sentenceIndex: 0
+    })
+    const handleOpen = ({
+                            bookTitle,
+                            chapterTitle,
+                            text,
+                            sentenceIndex
+                        }: {
+        bookTitle: string,
+        chapterTitle: string,
+        text: string,
+        sentenceIndex: number
+    }) => {
+        setOpenModal(true);
+        setQuoteToAdd(p => ({
+            ...p,
+            ...{
+                bookTitle,
+                chapterTitle,
+                text,
+                sentenceIndex
+            }
+        }))
+    }
+
+    const handleClose = () => setOpenModal(false);
+
 
     const handleSubmit = () => {
         setLoading(true);
@@ -38,11 +79,41 @@ const Home: NextPage = ({user}) => {
         }).then((res: Response) => {
             setLoading(false);
             setSearchResults(res.data.searchResultItems);
+            if (res.data.searchResultItems.length === 0) {
+                alert("Nothing Found")
+            }
         }).catch((err: { error: string; }) => {
             setLoading(false);
             alert(err.error);
         });
     };
+
+    useEffect(() => {
+        setLoading(() => true)
+        const req = {
+            'url': '/v2/api/get-users-documents', 'data': {
+                'uid': user.sid,
+            }
+        }
+
+        axios.post('/api/v2', req)
+            .then((res) => {
+                setLoading(() => false)
+                const docs: Array<{ docName: string, docUUID: string }> = []
+                for (var i = 0; i < res.data.documents.length; i++) {
+                    docs.push({
+                        docName: res.data.documents[i].document_name,
+                        docUUID: res.data.documents[i].document_uuid
+                    })
+                }
+                setListOfDocuments(() => docs)
+                return
+            })
+            .catch((err) => {
+                setLoading(() => false)
+                return err
+            })
+    }, []);
 
     return (
         <Container>
@@ -80,7 +151,7 @@ const Home: NextPage = ({user}) => {
                     </LoadingButton>
                 </div>
             </div>
-            <div className="flex flex-col gap-12 mt-4">
+            <div className="flex flex-col gap-16 mt-4">
                 {(searchResults) && (
                     searchResults.map(({
                                            book_title,
@@ -100,23 +171,65 @@ const Home: NextPage = ({user}) => {
                     ) => (
                         <div
                             key={sentence_index.toString() + paragraph_index.toString() + index.toString()}
-                            className="flex flex-row space-between"
+                            className="flex flex-col md:flex-row items-center space-between"
                         >
                             <div className="flex flex-col w-4/5">
-                                <div className="flex flex-row items-center py-2">
-                                    <p className="opacity-70 text-sx py-1">{chapter_title}</p>
-                                    <ArrowForwardIosIcon style={{fontSize: "small"}} />
-                                    <p className="text-grey-500 opacity-50 py-1 text-sx">{book_title}</p>
+                                <div className="flex flex-col md:flex-row md:items-center py-2">
+                                    <p className="opacity-70 text-sx">{chapter_title}</p>
+                                    <div className="flex flex-row items-center ml-8">
+                                        <ArrowForwardIosIcon className="mx-2" style={{fontSize: "small"}}/>
+                                        <p className="text-grey-500 opacity-50 text-sx">{book_title}</p>
+                                    </div>
                                 </div>
                                 <p>{text}</p>
                             </div>
-                            <div className="flex pt-1 h-full items-center justify-center">
-                                <Button endIcon={<AddIcon/>}>
+                            <div className="flex">
+                                <Button
+                                    className="self-center bg-green-mid opacity-70 text-white"
+                                    variant={"contained"}
+                                    onClick={() => handleOpen({
+                                        bookTitle: book_title,
+                                        chapterTitle: chapter_title,
+                                        text: text,
+                                        sentenceIndex: sentence_index
+                                    })}
+                                    endIcon={<AddIcon/>}
+                                >
                                     Add
                                 </Button>
                             </div>
                         </div>
                     )))}
+                <Dialog open={openModal} onClose={handleClose} className="">
+                    <DialogTitle style={{opacity: '50%'}}>Save this Extract to one of your Documents</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            <em style={{color: '#151a22'}}>
+                                {quoteToAdd.text}
+                            </em>
+                            <br/>
+                            &#8212; {' '}
+                            <span style={{color: '#151a22'}}>{quoteToAdd.chapterTitle}</span>
+                            {', ' + quoteToAdd.bookTitle}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions
+                        style={{
+                            margin: '10px',
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "start",
+                            gap: "10px"
+                        }}
+                    >
+                        <CustomDialogActions
+                            quoteToAdd={quoteToAdd}
+                            listOfDocuments={listOfDocuments}
+                            setListOfDocuments={setListOfDocuments}
+                            uid={user.sid}
+                        />
+                    </DialogActions>
+                </Dialog>
             </div>
 
         </Container>

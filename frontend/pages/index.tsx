@@ -27,6 +27,7 @@ type Response = {
     };
     status: number;
 }
+export const getServerSideProps = withPageAuthRequired();
 
 
 type QuoteToAdd = {
@@ -207,6 +208,7 @@ const Home: NextPage = ({user}) => {
                     ) => (
                         <div
                             key={sentence_index.toString() + paragraph_index.toString() + index.toString()}
+
                             className="flex flex-row items-center space-between"
                         >
                             <div className="flex flex-col w-4/5">

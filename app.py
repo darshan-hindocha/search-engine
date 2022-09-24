@@ -13,8 +13,6 @@ import uuid
 
 load_dotenv()
 
-from search import SearchEngine, Library
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URI")
 
@@ -99,6 +97,13 @@ class Paragraph(db.Model):
 class Sentence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
+
+    def get_book(self):
+        return Book.query.get(self.book_id)
+
+    def get_chapter(self):
+        return Chapter.query.get(self.chapter_id)
+
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
     paragraph_id = db.Column(db.Integer, db.ForeignKey('paragraph.id'), nullable=False)
@@ -142,7 +147,7 @@ class User(db.Model):
 
 
 class Document(db.Model):
-    uuid = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    uuid = db.Column(db.Text, primary_key=True, default=str(uuid.uuid4()), nullable=False, unique=True)
     name = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     extracts = db.relationship('Extract', backref='document', lazy=True)
@@ -156,6 +161,7 @@ class Document(db.Model):
     def __init__(self, user_id, name):
         self.user_id = user_id
         self.name = name
+        self.uuid = str(uuid.uuid4())
 
     def add_extract(self, extract):
         if extract in self.extracts:
@@ -167,12 +173,16 @@ class Document(db.Model):
 
 class Extract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    document_id = db.Column(UUID(as_uuid=True), db.ForeignKey('document.uuid'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
+    document_uuid = db.Column(UUID(as_uuid=True), db.ForeignKey('document.uuid'), nullable=False)
+
+    def get_document(self):
+        return Document.query.get(self.document_uuid)
+
     paragraph_id = db.Column(db.Integer, db.ForeignKey('paragraph.id'), nullable=False)
     sentence_id = db.Column(db.Integer, db.ForeignKey('sentence.id'), nullable=False)
     text = db.Column(db.Text, nullable=False)
+    book_title = db.Column(db.Text, nullable=False)
+    chapter_title = db.Column(db.Text, nullable=False)
 
     def __repr__(self):
         return ''.join([
@@ -180,13 +190,16 @@ class Extract(db.Model):
             self.text
         ])
 
-    def __init__(self, document_id, sentence: Sentence):
-        self.document_id = document_id
-        self.book_id = sentence.book_id,
-        self.chapter_id = sentence.chapter_id,
+    def __init__(self, document_uuid, sentence: Sentence):
+        self.document_uuid = document_uuid
+        self.user_id = Document.query.get(document_uuid).user_id
+
         self.paragraph_id = sentence.paragraph_id,
         self.sentence_id = sentence.id,
+
         self.text = sentence.text
+        self.book_title = sentence.get_book().title,
+        self.chapter_title = sentence.get_chapter().title,
 
 
 @dataclass
@@ -336,14 +349,19 @@ def get_users_documents():
 
 @app.route('/v2/api/create-document', methods=['GET', 'POST'])
 def create_document():
+    @dataclass
+    class CreateDocumentInput:
+        document_name: str
+        uid: str
+
     parser.add_argument('document_name')
     parser.add_argument('uid')
-    args = parser.parse_args()
-    user = User.query.filter_by(uid=args.uid).first()
+    args: CreateDocumentInput = parser.parse_args()
+    user: User = User.query.filter_by(uid=args.uid).first()
     if user is None:
         return {'message': 'User not found'}, 404
 
-    document = Document(user.id, args.document_name)
+    document: Document = Document(user.id, args.document_name)
     db.session.add(document)
     db.session.commit()
     return {'document_uuid': document.uuid}
@@ -351,17 +369,24 @@ def create_document():
 
 @app.route('/v2/api/add-extract-to-document', methods=['GET', 'POST'])
 def add_extract_to_document():
+    @dataclass
+    class AddExtractToDocumentInput:
+        sentence_index: str
+        uid: str
+        document_uuid: str
+        document_name: int
+
     parser.add_argument('sentence_index')
     parser.add_argument('uid')
     parser.add_argument('document_uuid')
     parser.add_argument('document_name')
-    args = parser.parse_args()
+    args: AddExtractToDocumentInput = parser.parse_args()
 
-    user = User.query.filter_by(uid=args.uid).first()
+    user: User = User.query.filter_by(uid=args.uid).first()
     if user is None:
         abort(400, 'user_id not found in database')
 
-    sentence = Sentence.query.filter_by(id=args.sentence_index).first()
+    sentence: Sentence = Sentence.query.filter_by(id=args.sentence_index).first()
     if sentence is None:
         abort(400, 'sentence not found in database')
 
@@ -369,8 +394,8 @@ def add_extract_to_document():
         document = Document(user.id, args.document_name)
         db.session.add(document)
     else:
-        document = Document.query.filter_by(uuid=args.document_uuid).first()
-    extract = Extract(document.uuid, sentence)
+        document: Document = Document.query.get(uuid=args.document_uuid).first()
+    extract: Extract = Extract(document.uuid, sentence)
     db.session.add(extract)
 
     document.add_extract(extract)
@@ -387,11 +412,11 @@ def get_document():
     parser.add_argument('document_uuid')
     args = parser.parse_args()
 
-    document = Document.query.filter_by(uuid=args.document_uuid).first()
+    document: Document = Document.query.get(args.document_uuid)
     if document is None:
         abort(400, 'document not found in database')
 
-    extracts = document.extracts
+    extracts: List[Extract] = document.extracts
 
     res = {
         'document_uuid': args['document_uuid'],
@@ -401,11 +426,11 @@ def get_document():
 
     for i, extract in enumerate(extracts):
         res['extracts'].append({
-            'text': extract.sentence.text,
-            'book_title': extract.sentence.paragraph.chapter.book.title,
-            'chapter_title': extract.sentence.paragraph.chapter.title,
-            'paragraph_index': extract.sentence.paragraph.id,
-            'sentence_index': extract.sentence.id,
+            'text': extract.text,
+            'book_title': extract.book_title,
+            'chapter_title': extract.chapter_title,
+            'paragraph_index': extract.paragraph_id,
+            'sentence_index': extract.sentence_id,
             'index': i + 1
         })
     return res

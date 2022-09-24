@@ -1,15 +1,13 @@
 import type {NextPage} from 'next'
-import {SetStateAction, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
+import CustomDialogActions from "../Components/Accessories/CustomDialogActions";
 import Container from "../Components/Container";
-import {FormControl, TextField} from "@mui/material";
+import {TextField} from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import Select, {SelectChangeEvent} from '@mui/material/Select';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -19,6 +17,7 @@ import cn from 'classnames';
 import axios from 'axios';
 import {SearchResultV2} from "./api/searchV2";
 import {withPageAuthRequired} from "@auth0/nextjs-auth0";
+import {QuoteToAdd} from "../Components/Accessories/CustomButtonGroup";
 
 type Response = {
     data: {
@@ -27,16 +26,6 @@ type Response = {
     };
     status: number;
 }
-export const getServerSideProps = withPageAuthRequired();
-
-
-type QuoteToAdd = {
-    text: string,
-    chapterTitle: string,
-    bookTitle: string,
-    documentToAddToName: string,
-    documentToAddToUUID: string,
-}
 
 export const getServerSideProps = withPageAuthRequired();
 
@@ -44,60 +33,40 @@ export const getServerSideProps = withPageAuthRequired();
 const Home: NextPage = ({user}) => {
     const [query, setQuery] = useState("");
     const [listOfDocuments, setListOfDocuments] = useState<Array<{ docName: string, docUUID: string }>>([])
-    const [selectedDocument, setSelectedDocument] = useState<{ docName: string, docUUID: string }>({
-        docName: "",
-        docUUID: ""
-    })
     const [searchResults, setSearchResults] = useState<SearchResultV2[] | null>();
     const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
+    const [openModal, setOpenModal] = useState(false);
+    const [quoteToAdd, setQuoteToAdd] = useState<QuoteToAdd>({
+        bookTitle: "",
+        chapterTitle: "",
+        text: "",
+        sentenceIndex: 0
+    })
     const handleOpen = ({
                             bookTitle,
                             chapterTitle,
-                            text
+                            text,
+                            sentenceIndex
                         }: {
         bookTitle: string,
         chapterTitle: string,
-        text: string
+        text: string,
+        sentenceIndex: number
     }) => {
-        setOpen(true);
+        setOpenModal(true);
         setQuoteToAdd(p => ({
             ...p,
             ...{
                 bookTitle,
                 chapterTitle,
-                text
+                text,
+                sentenceIndex
             }
         }))
     }
 
-    const handleChange = (event: SelectChangeEvent) => {
-        // @ts-ignore
-        setSelectedDocument(p => ({
-            ...p,
-            ...{
-                docUUID: event.target.value.toString(),
-                docName: event.target.name
-            }
-        }))
-    }
+    const handleClose = () => setOpenModal(false);
 
-    const handleClose = () => setOpen(false);
-    const [quoteToAdd, setQuoteToAdd] = useState<QuoteToAdd>({
-        bookTitle: "",
-        chapterTitle: "",
-        documentToAddToName: "",
-        documentToAddToUUID: "",
-        text: ""
-    })
-
-    const handleAddToDocument = () => {
-
-    }
-
-    const handleCreateDocument = () => {
-
-    }
 
     const handleSubmit = () => {
         setLoading(true);
@@ -130,13 +99,7 @@ const Home: NextPage = ({user}) => {
         axios.post('/api/v2', req)
             .then((res) => {
                 setLoading(() => false)
-                const docs: Array<{ docName: string, docUUID: string }> = [
-                    {
-                        docUUID: "0",
-                        docName: "New Document"
-                    }
-                ]
-                setSelectedDocument(() => docs[0])
+                const docs: Array<{ docName: string, docUUID: string }> = []
                 for (var i = 0; i < res.data.documents.length; i++) {
                     docs.push({
                         docName: res.data.documents[i].document_name,
@@ -188,7 +151,7 @@ const Home: NextPage = ({user}) => {
                     </LoadingButton>
                 </div>
             </div>
-            <div className="flex flex-col gap-12 mt-4">
+            <div className="flex flex-col gap-16 mt-4">
                 {(searchResults) && (
                     searchResults.map(({
                                            book_title,
@@ -208,24 +171,27 @@ const Home: NextPage = ({user}) => {
                     ) => (
                         <div
                             key={sentence_index.toString() + paragraph_index.toString() + index.toString()}
-
-                            className="flex flex-row items-center space-between"
+                            className="flex flex-col md:flex-row items-center space-between"
                         >
                             <div className="flex flex-col w-4/5">
-                                <div className="flex flex-row items-center py-2">
-                                    <p className="opacity-70 text-sx py-1">{chapter_title}</p>
-                                    <ArrowForwardIosIcon style={{fontSize: "small"}}/>
-                                    <p className="text-grey-500 opacity-50 py-1 text-sx">{book_title}</p>
+                                <div className="flex flex-col md:flex-row md:items-center py-2">
+                                    <p className="opacity-70 text-sx">{chapter_title}</p>
+                                    <div className="flex flex-row items-center ml-8">
+                                        <ArrowForwardIosIcon className="mx-2" style={{fontSize: "small"}}/>
+                                        <p className="text-grey-500 opacity-50 text-sx">{book_title}</p>
+                                    </div>
                                 </div>
                                 <p>{text}</p>
                             </div>
                             <div className="flex">
                                 <Button
-                                    className="self-center"
+                                    className="self-center bg-green-mid opacity-70 text-white"
+                                    variant={"contained"}
                                     onClick={() => handleOpen({
                                         bookTitle: book_title,
                                         chapterTitle: chapter_title,
-                                        text: text
+                                        text: text,
+                                        sentenceIndex: sentence_index
                                     })}
                                     endIcon={<AddIcon/>}
                                 >
@@ -234,8 +200,8 @@ const Home: NextPage = ({user}) => {
                             </div>
                         </div>
                     )))}
-                <Dialog open={open} onClose={handleClose} className="">
-                    <DialogTitle>Save this Extract to a Collection</DialogTitle>
+                <Dialog open={openModal} onClose={handleClose} className="">
+                    <DialogTitle style={{opacity: '50%'}}>Save this Extract to one of your Documents</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
                             <em style={{color: '#151a22'}}>
@@ -247,30 +213,21 @@ const Home: NextPage = ({user}) => {
                             {', ' + quoteToAdd.bookTitle}
                         </DialogContentText>
                     </DialogContent>
-                    <DialogActions>
-                        <FormControl fullWidth>
-                            <InputLabel id="select-document-label">Select Document</InputLabel>
-                            <Select
-                                labelId="select-document-label"
-                                value={selectedDocument.docUUID}
-                                label="Select Document"
-                                onChange={handleChange}
-                            >
-                                {listOfDocuments.map((d) => {
-                                    // @ts-ignore
-                                    return <MenuItem key={d.docUUID}
-                                                     name={d.docName}
-                                                     value={d.docUUID}
-                                    >{d.docName}</MenuItem>
-                                })}
-                            </Select>
-                        </FormControl>
-                        {(selectedDocument.docUUID === "0") ? (
-                            <Button onClick={handleCreateDocument}>Create</Button>
-                        ) : (
-                            <Button onClick={handleAddToDocument}>Add</Button>
-                        )}
-
+                    <DialogActions
+                        style={{
+                            margin: '10px',
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "start",
+                            gap: "10px"
+                        }}
+                    >
+                        <CustomDialogActions
+                            quoteToAdd={quoteToAdd}
+                            listOfDocuments={listOfDocuments}
+                            setListOfDocuments={setListOfDocuments}
+                            uid={user.sid}
+                        />
                     </DialogActions>
                 </Dialog>
             </div>

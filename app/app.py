@@ -147,7 +147,7 @@ class User(db.Model):
 
 
 class Document(db.Model):
-    uuid = db.Column(db.Text, primary_key=True, default=str(uuid.uuid4()), nullable=False, unique=True)
+    uuid = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     extracts = db.relationship('Extract', backref='document', lazy=True)
@@ -394,7 +394,7 @@ def add_extract_to_document():
         document = Document(user.id, args.document_name)
         db.session.add(document)
     else:
-        document: Document = Document.query.get(uuid=args.document_uuid).first()
+        document: Document = Document.query.get(args.document_uuid)
     extract: Extract = Extract(document.uuid, sentence)
     db.session.add(extract)
 

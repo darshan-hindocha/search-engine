@@ -8,6 +8,7 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
+import {GetStaticProps} from "next";
 
 type Document = {
     document_name: string,
@@ -16,7 +17,8 @@ type Document = {
     index: number,
 }
 
-export const getServerSideProps = withPageAuthRequired();
+// export const getServerSideProps = withPageAuthRequired();
+
 
 
 // @ts-ignore
@@ -131,6 +133,16 @@ const Documents: NextPage = ({user}) => {
         </Container>
 
     )
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+    return {
+        props: {
+            user: {
+                sid: "46e7rfvb9n09jwnef"
+            },
+        },
+    }
 }
 
 export default Documents

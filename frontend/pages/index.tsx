@@ -16,6 +16,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import cn from 'classnames';
 import axios from 'axios';
 import {SearchResultV2} from "./api/searchV2";
+import {GetStaticProps} from "next";
 import {withPageAuthRequired} from "@auth0/nextjs-auth0";
 import {QuoteToAdd} from "../Components/Accessories/CustomButtonGroup";
 
@@ -27,7 +28,7 @@ type Response = {
     status: number;
 }
 
-export const getServerSideProps = withPageAuthRequired();
+// export const getServerSideProps = withPageAuthRequired();
 
 //@ts-ignore
 const Home: NextPage = ({user}) => {
@@ -237,3 +238,14 @@ const Home: NextPage = ({user}) => {
 }
 
 export default Home
+
+
+export const getStaticProps: GetStaticProps = async () => {
+    return {
+        props: {
+            user: {
+                sid: "46e7rfvb9n09jwnef"
+            },
+        },
+    }
+}

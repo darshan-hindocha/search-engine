@@ -14,7 +14,7 @@ type Extract = {
     sentence_index: number
 }
 
-export const getServerSideProps = withPageAuthRequired();
+// export const getServerSideProps = withPageAuthRequired();
 
 //@ts-ignore
 const View: NextPage = ({user}) => {

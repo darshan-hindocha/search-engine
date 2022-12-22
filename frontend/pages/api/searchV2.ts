@@ -12,6 +12,7 @@ export type SearchResultV2 = {
 
 type Response = {
     searchResultItems: SearchResultV2[];
+    quantity: number,
 }
 
 type ErrResponse = {
@@ -27,7 +28,8 @@ export default async (req: NextApiRequest, res: NextApiResponse<Response | ErrRe
         const response = axiosResponse['results'] as SearchResultV2[];
 
         res.status(200).json({
-            searchResultItems: response
+            searchResultItems: response,
+            quantity: axiosResponse['quantity'],
         });
     } else {
         res.status(405).json({

@@ -239,16 +239,30 @@ def load_database_from_json(folder_path: str):
                     chapter = Chapter(book.id, json_book.chapters[i]["title"], i)
                     db.session.add(chapter)
                     db.session.commit()
-                    for j in range(len(json_book.chapters[i]["paragraphs"])):
-                        paragraph = Paragraph(book.id, chapter.id, json_book.chapters[i]["paragraphs"][j]["text"])
-                        db.session.add(paragraph)
-                        db.session.commit()
-                        for sentence in json_book.chapters[i]["paragraphs"][j]["sentences"]:
-                            sentence = Sentence(book.id, chapter.id, paragraph.id, sentence)
-                            db.session.add(sentence)
+                    if "sections" in json_book.chapters[i]:
+                        for k in range(len(json_book.chapters[i]["sections"])):
+                            for j in range(len(json_book.chapters[i]["sections"][k]["paragraphs"])):
+                                paragraph = Paragraph(book.id, chapter.id,
+                                                      json_book.chapters[i]["sections"][k]["paragraphs"][j]["text"])
+                                db.session.add(paragraph)
+                                db.session.commit()
+                                for sentence in json_book.chapters[i]["sections"][k]["paragraphs"][j]["sentences"]:
+                                    sentence = Sentence(book.id, chapter.id, paragraph.id, sentence['content'])
+                                    db.session.add(sentence)
+                                    db.session.commit()
+                                    paragraph.add_sentences_to_paragraph(paragraph.id, [sentence])
+                                chapter.add_paragraphs_to_chapter(chapter.id, [paragraph])
+                    else:
+                        for j in range(len(json_book.chapters[i]["paragraphs"])):
+                            paragraph = Paragraph(book.id, chapter.id, json_book.chapters[i]["paragraphs"][j]["text"])
+                            db.session.add(paragraph)
                             db.session.commit()
-                            paragraph.add_sentences_to_paragraph(paragraph.id, [sentence])
-                        chapter.add_paragraphs_to_chapter(chapter.id, [paragraph])
+                            for sentence in json_book.chapters[i]["paragraphs"][j]["sentences"]:
+                                sentence = Sentence(book.id, chapter.id, paragraph.id, sentence)
+                                db.session.add(sentence)
+                                db.session.commit()
+                                paragraph.add_sentences_to_paragraph(paragraph.id, [sentence])
+                            chapter.add_paragraphs_to_chapter(chapter.id, [paragraph])
                     book.add_chapters_to_book(book.id, [chapter])
 
 
@@ -261,40 +275,44 @@ parser = reqparse.RequestParser()
 def reset_db():
     db.drop_all()
     db.create_all()
-    load_database_from_json('data/json_data/')
+    load_database_from_json('../data/json_data/')
     return "Database loaded successfully"
 
 
 def full_text_search(search_term: str, limit: int = 10, offset: int = 0):
+    # TODO: handle multi word query
     return Sentence.query.filter(
         Sentence.__ts_vector__.match(search_term)
-    ).limit(limit).offset(offset).all()
+    ).all()
 
 
 @app.route('/v2/api/search', methods=['GET', 'POST'])
 def searchV2():
     if request.method == 'POST':
         parser.add_argument('query')
-        parser.add_argument('limit')
-        parser.add_argument('offset')
+        parser.add_argument('limit', default=10)
+        parser.add_argument('offset', default=0)
         args = parser.parse_args()
 
-        sentences = full_text_search(args.query, limit=args.limit, offset=args.offset)
+        sentences = full_text_search(args.query)
 
         res = {
             'query': args['query'],
+            'quantity': len(sentences),
             'results': []
         }
 
+        allowable_range = range(args.offset, args.offset+args.limit)
         for i, sentence in enumerate(sentences):
-            res['results'].append({
-                'text': sentence.text,
-                'book_title': sentence.paragraph.chapter.book.title,
-                'chapter_title': sentence.paragraph.chapter.title,
-                'paragraph_index': sentence.paragraph.id,
-                'sentence_index': sentence.id,
-                'index': i + 1
-            })
+            if i in allowable_range:
+                res['results'].append({
+                    'text': sentence.text,
+                    'book_title': sentence.paragraph.chapter.book.title,
+                    'chapter_title': sentence.paragraph.chapter.title,
+                    'paragraph_index': sentence.paragraph.id,
+                    'sentence_index': sentence.id,
+                    'index': i + 1
+                })
         return res
     else:
         return {'message': 'Hello, World!'}
@@ -376,6 +394,7 @@ def add_extract_to_document():
         document_uuid: str
         document_name: int
 
+    # TODO: protect against duplicates
     parser.add_argument('sentence_index')
     parser.add_argument('uid')
     parser.add_argument('document_uuid')
@@ -434,6 +453,7 @@ def get_document():
             'index': i + 1
         })
     return res
+
 
 
 if __name__ == '__main__':

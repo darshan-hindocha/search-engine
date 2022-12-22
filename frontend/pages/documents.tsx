@@ -119,7 +119,7 @@ const Documents: NextPage = ({user}) => {
                                 key={document_uuid}
                             >
                                 <div
-                                    className="flex flex-col gap-2 p-4 border border-gray-300 rounded-md mt-4"
+                                    className="flex flex-col gap-2 p-4 border border-gray-300 rounded-md mt-4 cursor-pointer"
                                 >
                                     <h2>{document_name}</h2>
                                     <p>{number_of_extracts} extracts</p>

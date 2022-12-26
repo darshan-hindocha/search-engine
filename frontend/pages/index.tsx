@@ -16,24 +16,27 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import cn from 'classnames';
 import axios from 'axios';
 import {SearchResultV2} from "./api/searchV2";
+import {GetStaticProps} from "next";
 import {withPageAuthRequired} from "@auth0/nextjs-auth0";
 import {QuoteToAdd} from "../Components/Accessories/CustomButtonGroup";
 
 type Response = {
     data: {
         'query': string,
+        'quantity': number,
         'searchResultItems': SearchResultV2[];
     };
     status: number;
 }
 
-export const getServerSideProps = withPageAuthRequired();
+// export const getServerSideProps = withPageAuthRequired();
 
 //@ts-ignore
 const Home: NextPage = ({user}) => {
     const [query, setQuery] = useState("");
     const [listOfDocuments, setListOfDocuments] = useState<Array<{ docName: string, docUUID: string }>>([])
     const [searchResults, setSearchResults] = useState<SearchResultV2[] | null>();
+    const [searchResultsQuantity, setSearchResultsQuantity] = useState(0)
     const [loading, setLoading] = useState(false);
     const [openModal, setOpenModal] = useState(false);
     const [quoteToAdd, setQuoteToAdd] = useState<QuoteToAdd>({
@@ -79,6 +82,7 @@ const Home: NextPage = ({user}) => {
         }).then((res: Response) => {
             setLoading(false);
             setSearchResults(res.data.searchResultItems);
+            setSearchResultsQuantity(res.data.quantity)
             if (res.data.searchResultItems.length === 0) {
                 alert("Nothing Found")
             }
@@ -151,7 +155,12 @@ const Home: NextPage = ({user}) => {
                     </LoadingButton>
                 </div>
             </div>
-            <div className="flex flex-col gap-16 mt-4">
+            {(searchResultsQuantity) > 0 && (
+                <div className="py-4">
+                    <p>Found {searchResultsQuantity} items</p>
+                </div>
+            )}
+            <div className="flex flex-col gap-12 mt-4">
                 {(searchResults) && (
                     searchResults.map(({
                                            book_title,
@@ -171,17 +180,17 @@ const Home: NextPage = ({user}) => {
                     ) => (
                         <div
                             key={sentence_index.toString() + paragraph_index.toString() + index.toString()}
-                            className="flex flex-col md:flex-row items-center space-between"
+                            className="flex flex-col md:flex-row items-center space-between gap-4"
                         >
                             <div className="flex flex-col w-4/5">
-                                <div className="flex flex-col md:flex-row md:items-center py-2">
-                                    <p className="opacity-70 text-sx">{chapter_title}</p>
-                                    <div className="flex flex-row items-center ml-8">
-                                        <ArrowForwardIosIcon className="mx-2" style={{fontSize: "small"}}/>
-                                        <p className="text-grey-500 opacity-50 text-sx">{book_title}</p>
-                                    </div>
+                                <div className="flex flex-row items-center">
+                                    <p className="opacity-70 text-sx">{book_title}</p>
+                                    <ArrowForwardIosIcon className="mx-2" style={{fontSize: "small"}}/>
+                                    <p className="text-grey-500 opacity-50 text-sx">{chapter_title}</p>
                                 </div>
-                                <p>{text}</p>
+                                <div>
+                                    <p>{text}... see more</p>
+                                </div>
                             </div>
                             <div className="flex">
                                 <Button
@@ -195,11 +204,12 @@ const Home: NextPage = ({user}) => {
                                     })}
                                     endIcon={<AddIcon/>}
                                 >
-                                    Add
+                                    Save
                                 </Button>
                             </div>
                         </div>
-                    )))}
+                    )))
+                }
                 <Dialog open={openModal} onClose={handleClose} className="">
                     <DialogTitle style={{opacity: '50%'}}>Save this Extract to one of your Documents</DialogTitle>
                     <DialogContent>
@@ -237,3 +247,14 @@ const Home: NextPage = ({user}) => {
 }
 
 export default Home
+
+
+export const getStaticProps: GetStaticProps = async () => {
+    return {
+        props: {
+            user: {
+                sid: "46e7rfvb9n09jwnef"
+            },
+        },
+    }
+}

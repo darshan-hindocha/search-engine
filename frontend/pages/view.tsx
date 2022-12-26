@@ -14,7 +14,7 @@ type Extract = {
     sentence_index: number
 }
 
-export const getServerSideProps = withPageAuthRequired();
+// export const getServerSideProps = withPageAuthRequired();
 
 //@ts-ignore
 const View: NextPage = ({user}) => {
@@ -48,7 +48,7 @@ const View: NextPage = ({user}) => {
 
     return (
         <Container>
-            {(documentName !== "") && <h1>Viewing:{` `+documentName}</h1>}
+            {(documentName !== "") && <h2>{documentName}</h2>}
             {loading && <h1>Loading Document</h1>}
             <div
                 className="flex flex-col gap-10 p-4 border border-gray-300 rounded-md mt-4"
@@ -60,9 +60,11 @@ const View: NextPage = ({user}) => {
                 )}
                 {extracts && !loading && extracts.map((extract) => {
                     return (
-                        <div key={extract.text + extract.index.toString()}>
-                            <h2>{extract.book_title}</h2>
-                            <h3>{extract.chapter_title}</h3>
+                        <div
+                            key={extract.text + extract.index.toString()}
+                        >
+                            <h4>{extract.book_title}</h4>
+                            <h4>{extract.chapter_title}</h4>
                             <p>{extract.text}</p>
                         </div>
                     )

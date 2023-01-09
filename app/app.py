@@ -1,5 +1,6 @@
 from flask import Flask, abort, request
 from flask_restful import reqparse
+from collections import defaultdict
 from socket import gethostname
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
@@ -440,18 +441,19 @@ def get_document():
     res = {
         'document_uuid': args['document_uuid'],
         'document_name': document.name,
-        'extracts': []
+        'extracts': defaultdict(dict)
     }
 
     for i, extract in enumerate(extracts):
-        res['extracts'].append({
-            'text': extract.text,
-            'book_title': extract.book_title,
-            'chapter_title': extract.chapter_title,
-            'paragraph_index': extract.paragraph_id,
-            'sentence_index': extract.sentence_id,
-            'index': i + 1
-        })
+        if extract.book_title in res['extracts']:
+            if extract.chapter_title in res['extracts'][extract.book_title]:
+                res['extracts'][extract.book_title][extract.chapter_title]['text'].append(extract.text)
+            else:
+                res['extracts'][extract.book_title][extract.chapter_title] = {}
+                res['extracts'][extract.book_title][extract.chapter_title]['text']= [extract.text]
+        else:
+            res['extracts'][extract.book_title][extract.chapter_title] = {}
+            res['extracts'][extract.book_title][extract.chapter_title]['text'] = [extract.text]
     return res
 
 

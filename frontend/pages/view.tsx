@@ -6,12 +6,11 @@ import axios from "axios";
 import {withPageAuthRequired} from "@auth0/nextjs-auth0";
 
 type Extract = {
-    text: string,
-    book_title: string,
-    index: number,
-    chapter_title: string,
-    paragraph_index: number,
-    sentence_index: number
+    [key: string]: {
+        [key: string]: {
+            text: string[],
+        }
+    }
 }
 
 // export const getServerSideProps = withPageAuthRequired();
@@ -38,6 +37,7 @@ const View: NextPage = ({user}) => {
                 setLoading(() => false)
                 setDocumentName(res.data.document_name)
                 setExtracts(res.data.extracts);
+                console.log(res.data.extracts)
                 return res
             })
             .catch((err) => {
@@ -51,21 +51,41 @@ const View: NextPage = ({user}) => {
             {(documentName !== "") && <h2>{documentName}</h2>}
             {loading && <h1>Loading Document</h1>}
             <div
-                className="flex flex-col gap-10 p-4 border border-gray-300 rounded-md mt-4"
+                className="flex flex-col gap-10 mt-4"
             >
                 {(extracts?.length === 0) && (
                     <div>
                         This document is currently empty!
                     </div>
                 )}
-                {extracts && !loading && extracts.map((extract) => {
+                {extracts && !loading && Object.keys(extracts).map((book: string) => {
                     return (
                         <div
-                            key={extract.text + extract.index.toString()}
+                            key={book}
                         >
-                            <h4>{extract.book_title}</h4>
-                            <h4>{extract.chapter_title}</h4>
-                            <p>{extract.text}</p>
+                            <h4>{book}</h4>
+                            <div className="flex-col">
+                                {// @ts-ignore
+                                    Object.keys(extracts[book]).map((chapter: string) => {
+                                    return (
+                                        <div key={chapter}>
+                                            <h4>{chapter}</h4>
+                                            <div className="flex-col">
+                                                {//@ts-ignore
+                                                    extracts[book][chapter]['text'].map((sentence) => {
+                                                    console.log(sentence)
+                                                    return (
+                                                        <p key={sentence} className="p-2">
+                                                            {sentence}
+                                                        </p>
+                                                    )
+
+                                                })}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
                         </div>
                     )
                 })}

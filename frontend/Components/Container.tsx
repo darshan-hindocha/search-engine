@@ -4,6 +4,7 @@ import NextLink from "next/link";
 import cn from 'classnames';
 import {useRouter} from "next/router";
 import {useUser} from '@auth0/nextjs-auth0';
+import Sidebar from '../Components/Sidebar'
 
 function NavItem({href, text}: { href: string, text: string }) {
     const router = useRouter();
@@ -26,6 +27,7 @@ function NavItem({href, text}: { href: string, text: string }) {
 }
 
 
+// TODO: Convert to next <Layout>
 export default function Container({children}: { children: ReactNode }) {
     const {user, error, isLoading} = useUser();
 
@@ -60,13 +62,21 @@ export default function Container({children}: { children: ReactNode }) {
                     }
                 </div>
             </nav>
-            <div className="flex flex-col sm:items-center">
+            <div className="flex mt-14 min-h-screen">
+                <div className="w-1/4 border-r-2 border-solid">
+                    <Sidebar userSID={"46e7rfvb9n09jwnef"} />
+                </div>
                 <main
-                    className="flex flex-col my-20 justify-center sm:w-3/4 max-w-4xl px-4"
+                    className="flex flex-col mb-20 justify-start w-2/4 sm:w-3/4 max-w-4xl px-4"
                 >
                     {children}
                 </main>
+                <div className="w-1/4">
+                </div>
             </div>
+            <footer className="w-full flex justify-center py-10 bg-gray-100">
+                <h4>Made with ❤️ by Darshan Hindocha</h4>
+            </footer>
         </div>
     )
 }

@@ -9,20 +9,17 @@ import TextField from "@mui/material/TextField";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import {GetStaticProps} from "next";
-
-type Document = {
-    document_name: string,
-    document_uuid: string,
-    number_of_extracts: number,
-    index: number,
-}
+import {Document} from "../lib/types";
 
 // export const getServerSideProps = withPageAuthRequired();
 
+type User = {
+    user: {
+        sid: string
+    }
+}
 
-
-// @ts-ignore
-const Documents: NextPage = ({user}) => {
+const Documents = ({user}: User) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
     const [data, setData] = useState<{ documents: Document[] } | null>(null)
@@ -38,7 +35,7 @@ const Documents: NextPage = ({user}) => {
         const req = {
             'url': '/v2/api/create-document', 'data': {
                 'document_name': documentName,
-                'uid': user.sid
+                'uid': user?.sid ? user.sid : ""
             }
         }
 
@@ -59,14 +56,13 @@ const Documents: NextPage = ({user}) => {
     const handleLoadData = () => {
         setLoading(() => true)
         const req = {
-            'url': '/v2/api/get-users-documents', 'data': {'uid': user.sid}
+            'url': '/v2/api/get-users-documents', 'data': {'uid': user?.sid ? user.sid : ""}
         }
 
         axios.post('/api/v2', req)
             .then((res: { data: { documents: Document[] } }) => {
                 setData(res.data)
                 setLoading(() => false)
-                console.log(res)
                 return res
             })
             .catch((err) => {

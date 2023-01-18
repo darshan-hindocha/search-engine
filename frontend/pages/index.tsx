@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import AddIcon from '@mui/icons-material/Add';
+import {ShareOutlined} from "@mui/icons-material";
 import LoadingButton from '@mui/lab/LoadingButton';
 import cn from 'classnames';
 import axios from 'axios';
@@ -68,8 +69,22 @@ const Home: NextPage = ({user}) => {
         }))
     }
 
-    const handleClose = () => setOpenModal(false);
+    const handleShare = ({
+                            bookTitle,
+                            chapterTitle,
+                            text,
+                            sentenceIndex
+                        }: {
+        bookTitle: string,
+        chapterTitle: string,
+        text: string,
+        sentenceIndex: number
+    }) => {
+        // TODO: Implement share quote functionality
+    }
 
+
+    const handleClose = () => setOpenModal(false);
 
     const handleSubmit = () => {
         setLoading(true);
@@ -192,7 +207,7 @@ const Home: NextPage = ({user}) => {
                                     <p>{text}... see more</p>
                                 </div>
                             </div>
-                            <div className="flex">
+                            <div className="flex gap-2">
                                 <Button
                                     className="self-center bg-green-mid opacity-70 text-white"
                                     variant={"contained"}
@@ -202,9 +217,20 @@ const Home: NextPage = ({user}) => {
                                         text: text,
                                         sentenceIndex: sentence_index
                                     })}
-                                    endIcon={<AddIcon/>}
                                 >
-                                    Save
+                                    <AddIcon/>
+                                </Button>
+                                <Button
+                                    className="self-center bg-blue-600 opacity-70 text-white"
+                                    variant={"contained"}
+                                    onClick={() => handleShare({
+                                        bookTitle: book_title,
+                                        chapterTitle: chapter_title,
+                                        text: text,
+                                        sentenceIndex: sentence_index
+                                    })}
+                                >
+                                    <ShareOutlined />
                                 </Button>
                             </div>
                         </div>

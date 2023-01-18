@@ -86,6 +86,18 @@ const Sidebar = ({userSID}: { userSID: string }) => {
                     <p>Loading...</p>
                 }
             </div>
+
+            <div>
+                <h4>
+                    Your Recent Searches
+                </h4>
+                {/* TODO: Implement recent searches in the backend */}
+            </div>
+            <div>
+                <h4>
+                    Your Bookmarks
+                </h4>
+            </div>
         </div>
     )
 }

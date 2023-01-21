@@ -54,7 +54,7 @@ const View: NextPage = ({user}) => {
 
     return (
         <Container>
-            {(documentName !== "") && <h2>{documentName}</h2>}
+            {loading ? <h1>Loading Document</h1> : <h2>{documentName}</h2>}
             <div className="flex flex-row w-full justify-center divide-x-2 divide-black">
                 <button
                     className={cn(
@@ -75,7 +75,6 @@ const View: NextPage = ({user}) => {
                     Extracts with Commentary
                 </button>
             </div>
-            {loading && <h1>Loading Document</h1>}
             <div
                 className="flex flex-col gap-10 mt-4"
             >

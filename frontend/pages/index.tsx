@@ -2,7 +2,7 @@ import type {NextPage} from 'next'
 import {useEffect, useState} from "react";
 import CustomDialogActions from "../Components/Accessories/CustomDialogActions";
 import Container from "../Components/Container";
-import {TextField} from "@mui/material";
+import {Autocomplete, TextField} from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -20,6 +20,7 @@ import {SearchResultV2} from "./api/searchV2";
 import {GetStaticProps} from "next";
 import {withPageAuthRequired} from "@auth0/nextjs-auth0";
 import {QuoteToAdd} from "../Components/Accessories/CustomButtonGroup";
+import {searchAutocompleteOptions} from "../lib/searchAutocomplete";
 
 type Response = {
     data: {
@@ -70,11 +71,11 @@ const Home: NextPage = ({user}) => {
     }
 
     const handleShare = ({
-                            bookTitle,
-                            chapterTitle,
-                            text,
-                            sentenceIndex
-                        }: {
+                             bookTitle,
+                             chapterTitle,
+                             text,
+                             sentenceIndex
+                         }: {
         bookTitle: string,
         chapterTitle: string,
         text: string,
@@ -136,38 +137,37 @@ const Home: NextPage = ({user}) => {
 
     return (
         <Container>
-            <h1>Search Engine <span
-                className="italic text-green-mid align-middle text-baseDesktop">(NOT EVEN BETA)</span></h1>
-
-            <p className="mt-4">
-                A search engine for your content
-            </p>
-            <div className="flex w-full mt-4 gap-2">
-                <TextField
-                    id="search"
-                    label={"Enter Search Query"}
-                    variant="outlined"
-                    className="w-full"
-                    onChange={(e) => {
-                        setQuery(e.target.value)
-                    }}
-                />
-                <div>
-                    <LoadingButton
-                        className={cn(
-                            (!query) ? 'opacity-50 cursor-not-allowed' : '',
-                            "h-full bg-green-mid text-white"
-                        )}
-                        size="small"
-                        onClick={handleSubmit}
-                        endIcon={<SendIcon/>}
-                        loading={loading}
-                        loadingPosition="end"
-                        variant="contained"
-                        disabled={!query}
-                    >
-                        Search
-                    </LoadingButton>
+            <div className="flex flex-col items-center">
+                <h1>Kavit</h1>
+                <div className="flex w-full mt-4 gap-2">
+                    <Autocomplete
+                        id="search"
+                        className="w-full"
+                        freeSolo={true}
+                        selectOnFocus
+                        clearOnBlur
+                        handleHomeEndKeys
+                        options={searchAutocompleteOptions}
+                        onChange={(event, newValue) => {
+                            if (typeof newValue === 'string') {
+                                setQuery(newValue);
+                            } else if (newValue && newValue.label) {
+                                setQuery(newValue.label);
+                            }
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                handleSubmit()
+                            }
+                        }}
+                        renderInput={(params) => <TextField
+                            {...params}
+                            label="Search for your next prasang..."
+                            onChange={(e) => {
+                                setQuery(e.target.value)
+                            }}
+                        />}
+                    />
                 </div>
             </div>
             {(searchResultsQuantity) > 0 && (
@@ -230,7 +230,7 @@ const Home: NextPage = ({user}) => {
                                         sentenceIndex: sentence_index
                                     })}
                                 >
-                                    <ShareOutlined />
+                                    <ShareOutlined/>
                                 </Button>
                             </div>
                         </div>

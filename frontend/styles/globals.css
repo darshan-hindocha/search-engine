@@ -9,23 +9,23 @@ html {
 
 @layer base {
   h1 {
-    @apply font-ovo text-h1Mobile lg:text-h1Desktop;
+    @apply font-robotoSlab text-h1Mobile lg:text-h1Desktop;
   }
 
   h2 {
-    @apply font-ovo text-h2Mobile lg:text-h2Desktop;
+    @apply font-robotoSlab text-h2Mobile lg:text-h2Desktop;
   }
 
   h3 {
-    @apply font-ovo text-h3Mobile lg:text-h3Desktop;
+    @apply font-robotoCondensed text-h3Mobile lg:text-h3Desktop;
   }
 
   h4 {
-    @apply font-montserrat text-h4Mobile lg:text-h4Desktop;
+    @apply font-roboto text-h4Mobile lg:text-h4Desktop;
   }
 
   p {
-    @apply font-montserrat text-baseMobile lg:text-baseDesktop;
+    @apply font-roboto text-baseMobile lg:text-baseDesktop;
   }
 }
 

@@ -27,8 +27,9 @@ module.exports = {
                 }
             },
             fontFamily: {
-                ovo: ["Ovo", "serif"],
-                montserrat: ["Montserrat", "sans-serif"],
+                roboto: ['Roboto', 'sans-serif'],
+                robotoCondensed: ['Roboto Condensed', 'sans-serif'],
+                robotoSlab: ['Roboto Slab', 'sans-serif'],
             },
             spacing: {},
             fontSize: {

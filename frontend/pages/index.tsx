@@ -138,11 +138,12 @@ const Home: NextPage = ({user}) => {
     return (
         <Container>
             <div className="flex flex-col items-center">
-                <h1>Kavit</h1>
                 <div className="flex w-full mt-4 gap-2">
                     <Autocomplete
                         id="search"
-                        className="w-full"
+                        className={cn(
+                            "w-full",
+                        )}
                         freeSolo={true}
                         selectOnFocus
                         clearOnBlur

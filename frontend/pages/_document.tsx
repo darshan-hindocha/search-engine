@@ -15,7 +15,7 @@ export default function Document() {
                     crossOrigin="true"
                 />
                 <link
-                    href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital@0;1&family=Roboto+Slab:wght@300;400;700&family=Roboto:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+                    href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Roboto+Condensed:ital@0;1&family=Roboto+Slab:wght@300;400;700&family=Roboto:ital,wght@0,300;0,400;0,700;1,400&display=swap"
                     rel="stylesheet"/>
 
                 <link

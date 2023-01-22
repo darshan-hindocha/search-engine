@@ -48,55 +48,55 @@ const Sidebar = ({userSID}: { userSID: string }) => {
     }
 
     return (
-        <div className="flex flex-col w-full gap-2 m-4">
-            <div className="w-2/3">
+        <div className="flex flex-col w-full gap-2">
+            <div className="w-full">
                 <button
-                    className="w-full"
+                    className="flex flex-col w-full items-center"
                     onClick={() => router.push('/')}
                 >
-                    <h4 className={cn(
-                        router.pathname === "/" ? "bg-gray-200" : "bg-green-500",
-                        "px-2 rounded-md"
+                    <h1 className={cn(
+                        "px-2 rounded-md font-dancingScript"
                     )}>
-                        <SearchOutlined/>
-                        Search
-                    </h4>
+                        Kavitā
+                    </h1>
                 </button>
             </div>
-            <div className="flex flex-col w-3/4 gap-2">
-                <h4>
-                    Your Documents
-                </h4>
-                {data && !error ?
-                    data.documents?.map(({document_name, document_uuid, number_of_extracts}) => {
-                        return (
-                            <Link
-                                href={`/view?doc=${document_uuid}`}
-                                key={document_uuid}
-                            >
-                                <div
-                                    className="flex flex-col p-2 border border-gray-300 rounded-md cursor-pointer"
+            <div className="flex flex-col w-full gap-2 px-4">
+                <div className="flex flex-col w-full gap-2" >
+                    <h4>
+                        Your Documents
+                    </h4>
+                    {data && !error ?
+                        data.documents?.map(({document_name, document_uuid, number_of_extracts}) => {
+                            return (
+                                <Link
+                                    href={`/view?doc=${document_uuid}`}
+                                    key={document_uuid}
                                 >
-                                    <h4>{document_name}</h4>
-                                    <p>{number_of_extracts} extracts</p>
-                                </div>
-                            </Link>
-                        )
-                    }) :
-                    <p>Loading...</p>
-                }
-            </div>
+                                    <div
+                                        className="flex flex-col p-2 border border-gray-300 rounded-md cursor-pointer"
+                                    >
+                                        <h4>{document_name}</h4>
+                                        <p>{number_of_extracts} extracts</p>
+                                    </div>
+                                </Link>
+                            )
+                        }) :
+                        <p>Loading...</p>
+                    }
+                </div>
 
-            <div>
-                <h4>
-                    Your Recent Searches
-                </h4>
-                {/* TODO: Implement recent searches in the backend */}
-            </div>
-            <div>
-                <h4>
-                    Your Bookmarks
-                </h4>
+                <div>
+                    <h4>
+                        Your Recent Searches
+                    </h4>
+                    {/* TODO: Implement recent searches in the backend */}
+                </div>
+                <div>
+                    <h4>
+                        Your Bookmarks
+                    </h4>
+                </div>
             </div>
         </div>
     )

@@ -30,6 +30,7 @@ module.exports = {
                 roboto: ['Roboto', 'sans-serif'],
                 robotoCondensed: ['Roboto Condensed', 'sans-serif'],
                 robotoSlab: ['Roboto Slab', 'sans-serif'],
+                dancingScript: ['Dancing Script', 'cursive'],
             },
             spacing: {},
             fontSize: {

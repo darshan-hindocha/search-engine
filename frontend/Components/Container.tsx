@@ -43,12 +43,15 @@ export default function Container({children}: { children: ReactNode }) {
                 <meta name="robots" content="follow, index"/>
                 <meta content={meta.description} name="description"/>
                 <meta property="og:type" content={meta.type}/>
-                <meta property="og:site_name" content="Mandir Search Engine"/>
+                <meta property="og:site_name" content="Kavita"/>
                 <meta property="og:description" content={meta.description}/>
                 <meta property="og:title" content={meta.title}/>
             </Head>
             <nav
-                className="fixed z-10 flex w-full justify-between px-4 md:px-10 py-2 bg-opacity-90 bg-gray-200"
+                className={cn("z-10 flex w-full justify-between",
+                    "px-4 md:px-10 py-2",
+                    "bg-opacity-90 border-b border-gray-200"
+                )}
             >
                 <div>
                     <NavItem href="/" text="Home"/>
@@ -62,7 +65,7 @@ export default function Container({children}: { children: ReactNode }) {
                     }
                 </div>
             </nav>
-            <div className="flex mt-14 min-h-screen">
+            <div className="flex min-h-screen">
                 <div className="w-1/4 border-r-2 border-solid">
                     <Sidebar userSID={"46e7rfvb9n09jwnef"} />
                 </div>
@@ -74,8 +77,8 @@ export default function Container({children}: { children: ReactNode }) {
                 <div className="w-1/4">
                 </div>
             </div>
-            <footer className="w-full flex justify-center py-10 bg-gray-100">
-                <h4>Made with ❤️ by Darshan Hindocha</h4>
+            <footer className="w-full flex justify-center py-6 bg-gray-100">
+                <p>Made with ❤️ by Darshan</p>
             </footer>
         </div>
     )

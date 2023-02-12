@@ -28,7 +28,6 @@ label2color = {
     'Title': 'pink'
 }
 
-
 # bounding boxes start and end of a sequence
 cls_box = [0, 0, 0, 0]
 sep_box = cls_box
@@ -287,19 +286,17 @@ def pdf_to_images(uploaded_pdf):
         # display images
         if num_imgs > 0:
 
-            import matplotlib.pyplot as plt
-            % matplotlib
-            inline
-
-            plt.figure(figsize=(20, 10))
-            columns = 5
-            for i, image in enumerate(images):
-                plt.subplot(num_imgs / columns + 1, columns, i + 1)
-                plt.xticks(color="white")
-                plt.yticks(color="white")
-                plt.tick_params(bottom=False)
-                plt.tick_params(left=False)
-                plt.imshow(image)
+            # import matplotlib.pyplot as plt
+            #
+            # plt.figure(figsize=(20, 10))
+            # columns = 5
+            # for i, image in enumerate(images):
+            #     plt.subplot(num_imgs / columns + 1, columns, i + 1)
+            #     plt.xticks(color="white")
+            #     plt.yticks(color="white")
+            #     plt.tick_params(bottom=False)
+            #     plt.tick_params(left=False)
+            #     plt.imshow(image)
 
             return filename, images
 
@@ -326,7 +323,7 @@ def extraction_data_from_image(images):
                 ret, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
 
                 # OCR PyTesseract
-                results[i] = pytesseract.image_to_data(img, lang='por', config=custom_config,
+                results[i] = pytesseract.image_to_data(img, lang='eng', config=custom_config,
                                                        output_type=pytesseract.Output.DICT)
 
                 lines[i], row_indexes[i], par_boxes[i], line_boxes[i] = get_data(results[i], factor, conf_min=0)
@@ -742,84 +739,91 @@ def display_chunk_lines_inference(index_chunk=None):
     df = df[cols]
     display(df)
 
+if __name__ == "__main__":
+    for uploaded_pdf, save_to in [
+        ('../data/Sahajanand Charitra.pdf', 'sahajanand_charitra')
+    ]:
+        from transformers import AutoTokenizer, AutoModelForTokenClassification
 
-from transformers import AutoTokenizer, AutoModelForTokenClassification
+        import torch
 
-import torch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForTokenClassification.from_pretrained(model_id);
+        model.to(device);
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-model = AutoModelForTokenClassification.from_pretrained(model_id);
-model.to(device);
+        # get labels
+        id2label = model.config.id2label
+        label2id = model.config.label2id
+        num_labels = len(id2label)
 
-# get labels
-id2label = model.config.id2label
-label2id = model.config.label2id
-num_labels = len(id2label)
+        filename, images = pdf_to_images(uploaded_pdf)
 
-uploaded_pdf = ""
+        dataset, lines, row_indexes, par_boxes, line_boxes = extraction_data_from_image(images)
 
-filename, images = pdf_to_images(uploaded_pdf)
+        i = 0
+        image = images[i].copy()  # PIL
+        width, height = image.size
+        img = np.array(image, dtype='uint8')  # PIL to cv2
 
-dataset, lines, row_indexes, par_boxes, line_boxes = extraction_data_from_image(images)
+        # paragraphs
+        for box in par_boxes[i]:
+            cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 3)  # blue
+        # lines
+        for box in line_boxes[i]:
+            cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (0, 0, 255), 2)  # red
 
-i = 0
-image = images[i].copy()  # PIL
-width, height = image.size
-img = np.array(image, dtype='uint8')  # PIL to cv2
+        img = cv2.resize(img, (int(width / 4), int(height / 4)))
 
-# paragraphs
-for box in par_boxes[i]:
-    cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (255, 0, 0), 3)  # blue
-# lines
-for box in line_boxes[i]:
-    cv2.rectangle(img, (box[0], box[1]), (box[2], box[3]), (0, 0, 255), 2)  # red
+        df = pd.DataFrame({"texts": lines[i], "bboxes lines": line_boxes[i]})
 
-img = cv2.resize(img, (int(width / 4), int(height / 4)))
+        encoded_dataset = dataset.map(prepare_inference_features, batched=True, batch_size=64,
+                                      remove_columns=dataset.column_names)
 
-df = pd.DataFrame({"texts": lines[i], "bboxes lines": line_boxes[i]})
-
-encoded_dataset = dataset.map(prepare_inference_features, batched=True, batch_size=64,
-                              remove_columns=dataset.column_names)
-
-# get and image from random chunk
-# display_chunk_lines_inference()
-
-from torch.utils.data import Dataset
+        from torch.utils.data import Dataset
 
 
-class CustomDataset(Dataset):
-    def __init__(self, dataset, tokenizer):
-        self.dataset = dataset
-        self.tokenizer = tokenizer
+        class CustomDataset(Dataset):
+            def __init__(self, dataset, tokenizer):
+                self.dataset = dataset
+                self.tokenizer = tokenizer
 
-    def __len__(self):
-        return len(self.dataset)
+            def __len__(self):
+                return len(self.dataset)
 
-    def __getitem__(self, idx):
-        # get item
-        example = self.dataset[idx]
-        encoding = dict()
-        encoding["images_ids"] = example["images_ids"]
-        encoding["chunk_ids"] = example["chunk_ids"]
-        encoding["input_ids"] = example["input_ids"]
-        encoding["attention_mask"] = example["attention_mask"]
-        encoding["bbox"] = example["normalized_bboxes"]
-        # encoding["labels"] = example["labels"]
+            def __getitem__(self, idx):
+                # get item
+                example = self.dataset[idx]
+                encoding = dict()
+                encoding["images_ids"] = example["images_ids"]
+                encoding["chunk_ids"] = example["chunk_ids"]
+                encoding["input_ids"] = example["input_ids"]
+                encoding["attention_mask"] = example["attention_mask"]
+                encoding["bbox"] = example["normalized_bboxes"]
+                # encoding["labels"] = example["labels"]
 
-        return encoding
+                return encoding
 
 
-custom_encoded_dataset = CustomDataset(encoded_dataset, tokenizer)
+        custom_encoded_dataset = CustomDataset(encoded_dataset, tokenizer)
 
-outputs, images_ids_list, chunk_ids, input_ids, bboxes = predictions_token_level(images, custom_encoded_dataset)
+        outputs, images_ids_list, chunk_ids, input_ids, bboxes = predictions_token_level(images, custom_encoded_dataset)
 
-probs_bbox, bboxes_list_dict, input_ids_dict_dict, probs_dict_dict, df = predictions_line_level(outputs,
-                                                                                                images_ids_list,
-                                                                                                chunk_ids, input_ids,
-                                                                                                bboxes)
+        probs_bbox, bboxes_list_dict, input_ids_dict_dict, probs_dict_dict, df = predictions_line_level(outputs,
+                                                                                                        images_ids_list,
+                                                                                                        chunk_ids,
+                                                                                                        input_ids,
+                                                                                                        bboxes)
 
-labeled_images = get_labeled_images(images_ids_list, bboxes_list_dict, probs_dict_dict)
+        labeled_images = get_labeled_images(images_ids_list, bboxes_list_dict, probs_dict_dict)
 
-print(f"Number of PDF page images: {len(labeled_images)}")
+        import os
+
+        save_to = "../data/lilt_generated/" + save_to
+        os.mkdir(save_to)
+
+        for i in df.keys():
+            df[i].to_csv(f"{save_to}/page_{i}.csv")
+
+        print(f"Number of PDF page images: {len(labeled_images)}")

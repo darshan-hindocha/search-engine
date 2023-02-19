@@ -1,2 +1,5 @@
 /data/**.pdf
 /.env
+/experiments/
+/data/lilt_generated/*
+/data/*

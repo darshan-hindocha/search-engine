@@ -35,6 +35,7 @@ export default function Document() {
                     sizes="16x16"
                     type="image/png"
                 />
+                <link rel="manifest" href="/site.webmanifest"/>
             </Head>
             <body>
             <Main/>

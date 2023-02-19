@@ -6,9 +6,9 @@ function RootLayout({children}: {
 }) {
     return (
         <>
-            <body>
+            <body className="bg-bespoke-light-ivory">
             <Navbar/>
-            <div className="min-h-screen bg-bespoke-light-ivory">
+            <div className="min-h-screen">
                 {children}
             </div>
             </body>

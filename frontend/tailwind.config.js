@@ -1,10 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 module.exports = {
-    content: [
-        "./app/**/*.{js,ts,jsx,tsx}",
-        "./components/**/*.{js,ts,jsx,tsx}",
-    ],
+    content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
     theme: {
         extend: {
             colors: {
@@ -24,6 +21,14 @@ module.exports = {
                     light: '#f78166',
                     mid: '#238636',
                     dark: '#242710',
+                },
+                bespoke: {
+                    'warm-golden-brown': '#967126',
+                    'cool-grayish-brown': '#4F4A41',
+                    'muted-olive-green': '#6B8E23',
+                    'deep-reddish-brown': '#8B4513',
+                    'light-sandy-brown': '#CD853F',
+                    'light-ivory': '#F8F8FF',
                 }
             },
             fontFamily: {
@@ -49,5 +54,4 @@ module.exports = {
     },
 
     plugins: [require("@tailwindcss/typography")],
-    important: "#__next",
 };

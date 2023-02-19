@@ -1,12 +1,19 @@
-export default function RootLayout({
-                                       children,
-                                   }: {
+import "./globals.css";
+import Navbar from "../components/Navbar";
+
+function RootLayout({children}: {
     children: React.ReactNode
 }) {
     return (
-        <html>
-        <head/>
-        <body>{children}</body>
-        </html>
+        <>
+            <body>
+            <Navbar/>
+            <div className="min-h-screen bg-bespoke-light-ivory">
+                {children}
+            </div>
+            </body>
+        </>
     )
 }
+
+export default RootLayout;

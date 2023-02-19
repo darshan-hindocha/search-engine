@@ -1,0 +1,15 @@
+---
+section_number: Gadhadã I-13 
+section_title: Planting the Branch of a Banyan or Pipal Tree Elsewhere
+slug: vach/pratham-13
+---
+On the night of Mãgshar vadi 1, Samvat 1876 [2 December  1819], Shriji Mahãrãj was sitting on a large, decorated cotplaced on the platform beneath the neem tree near the mandir of Shri Vãsudevnãrãyan in Dãdã Khãchar’s darbãr in Gadhadã.He was wearing a red survãl and a red dagli. He had tied a golden shelu around His head, and another golden shelu wastied around His waist. Pearl necklaces hung around His neck, and tassels of pearls were also dangling from His pãgh. Atthat time, an assembly of munis as well as devotees from various places had gathered before Him.
+
+Thereupon Nityãnand Swãmi asked Shriji Mahãrãj, “Is there only one jiva within each body, or are there many? If Yousay there is only one, then when the branches of banyan, pipal or other trees are cut and planted elsewhere, exactly thesame type of tree grows there as well. Has that one jiva been dissected into two, or has another jiva entered the newtree? If You say that it is the same jiva, then how has the jiva, which is whole and indivisible, been cut?”
+
+Hearing this, Shriji Mahãrãj said, “Here, I shall answer the question. Purush and Prakruti are the instruments of  Shri Krishna  Bhagwãn. He is the cause of the creation, sustenance, and dissolution of this cosmos. Through His two instruments of Purush  and Prakruti, He assumed the form of Virãt. Then, during the first  Brãhma-kalp, from his body in the form of Virãt, God gave all beings  from Brahmã to the smallest blade of grass their respective bodies.  Thereafter, during the Pãdma-kalp, God, through the form of Brahmã, gave Marichi and others their respective bodies. Then  through Kashyap and Daksha, He gave the deities, demons, humans,  animals, and all of the mobile and immobile life forms their bodies.  That Shri Krishna Bhagwãn, along with His instruments in the form of Purush and Prakruti, resides as the antaryãmi in all jivas and grants each jiva a body according to its past karmas.
+
+“That jiva, in its past lives, has performed many karmas – some  with sattvagun predominating, some with rajogun predominating  and some with tamogun predominating. As a consequence of those  karmas, God grants that jiva a body of the udbhij category, or a body  of the jarãyuj category, or a body of the svedaj category, or a body of  the andaj category. God also grants it the fruits of its karmas in the  form of happiness and misery.
+
+In addition, God makes the body of that jiva give birth to another body – again, according to its own karmas. Just as God  created the various life forms from the bodies of Kashyap and the  other prajãpatis, similarly, that same God, while residing in all jivas as antaryãmi, creates other bodies from one body by methods appropriate to that particular body. However, the jiva, through  which other bodies are created, does not itself multiply into many  forms. So, in reality, God grants birth to a jiva, through an  appropriate body of another jiva, according to the relation of the karmas between the two jivas.”
+

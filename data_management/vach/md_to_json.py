@@ -2,11 +2,7 @@ import re
 import json
 
 
-def main():
-    # Read the markdown file
-    with open("data/gadhada_pratham.md", "r") as f:
-        md = f.read()
-
+def get_structured_data(md) -> dict:
     # Split the markdown file into sections
     sections = re.split(r"\n---\n", md)
 
@@ -28,7 +24,17 @@ def main():
             "paragraphs": paragraphs,
             "slug": f"vach/pratham-{section_number.split('-')[-1].replace(' ', '')}"
         })
-    print(data)
+
+    return data
+
+
+def main():
+    # Read the markdown file
+    with open("data/gadhada_pratham.md", "r") as f:
+        md = f.read()
+
+    # Get the structured data
+    data = get_structured_data(md)
 
     # Write the data to a JSON file
     with open("data/gadhada_pratham.json", "w") as f:

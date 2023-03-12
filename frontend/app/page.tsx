@@ -97,7 +97,7 @@ export default function Home() {
 
     return (
         <main
-            className="container min-h-screen  mx-auto p-4 flex flex-col max-w-lg gap-4"
+            className="container min-h-screen mx-auto p-4 flex flex-col max-w-lg gap-4"
         >
             <Header/>
             <Tile/>

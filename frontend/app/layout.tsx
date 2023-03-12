@@ -1,13 +1,11 @@
 import "./globals.css";
-import Navbar from "../components/Navbar";
 
 function RootLayout({children}: {
     children: React.ReactNode
 }) {
     return (
         <>
-            <body className="bg-bespoke-light-ivory">
-            <Navbar/>
+            <body className="bg-[#C0D6BD]">
             <div className="min-h-screen">
                 {children}
             </div>
